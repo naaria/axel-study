@@ -1,8 +1,8 @@
-# Pokédex · Modo estudio
+# Axel Study
 
 Guía para preparar la presentación del proyecto del Módulo 3 ([Pokédex](https://github.com/naaria/pokedex)).
 
-🔗 **Ver la guía:** https://naaria.github.io/pokedex-estudio/
+🔗 **Ver la guía:** https://naaria.github.io/axel-study/
 
 Incluye:
 
