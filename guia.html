@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Guía de estudio para la demo del Módulo 3: guion, historias de usuario, conceptos de los labs 09–12, app.js explicado línea por línea, preguntas y quiz.">
+<style>
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+</style>
+<title>Pokédex: modo estudio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Silkscreen&display=swap">
+<style>
+/* Concepto: una Pokédex de estudio. Carcasa roja arriba, "pantallas" de lectura abajo,
+   código siempre en pantalla oscura como la consola. */
+:root {
+  --bg: #eceff3;
+  --panel: #ffffff;
+  --panel-2: #f6f7f9;
+  --ink: #1a1c21;
+  --muted: #586070;
+  --line: #d5dae2;
+  --red: #c8102e;
+  --red-ink: #ffffff;
+  --red-deep: #8a0a1f;
+  --gold: #b07a06;
+  --gold-soft: #fff4d6;
+  --blue: #2563b8;
+  --blue-soft: #e6effb;
+  --green: #1f7a45;
+  --green-soft: #e3f4ea;
+  --code-bg: #1c1f26;
+  --code-ink: #e4e7ee;
+  --code-dim: #7d8596;
+  --t-kw: #ff7aa2;
+  --t-str: #a5e3a0;
+  --t-com: #7d8596;
+  --t-num: #ffc66d;
+  --t-fn: #7cc4ff;
+  --t-tag: #ff9f6b;
+  --font-display: "Silkscreen", "Courier New", monospace;
+  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111318; --panel: #1a1d24; --panel-2: #20242c; --ink: #eceef3; --muted: #a3abb9; --line: #2e333d;
+    --red: #e23a55; --red-ink: #ffffff; --red-deep: #7a0a1c; --gold: #f2c14e; --gold-soft: #3a2f12;
+    --blue: #7fb0f0; --blue-soft: #1b2a40; --green: #5fcf8c; --green-soft: #15301f;
+    --code-bg: #0c0e12; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111318; --panel: #1a1d24; --panel-2: #20242c; --ink: #eceef3; --muted: #a3abb9; --line: #2e333d;
+  --red: #e23a55; --red-ink: #ffffff; --red-deep: #7a0a1c; --gold: #f2c14e; --gold-soft: #3a2f12;
+  --blue: #7fb0f0; --blue-soft: #1b2a40; --green: #5fcf8c; --green-soft: #15301f;
+  --code-bg: #0c0e12; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--red); }
+a { color: var(--blue); }
+code { overflow-wrap: anywhere; font-family: var(--font-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; font-size: .88em; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 .3em; }
+h1, h2, h3, h4 { text-wrap: balance; line-height: 1.25; }
+p, li, td, th, summary { overflow-wrap: break-word; }
+.wrap { max-width: 1080px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- Carcasa ---------- */
+.carcasa { background: var(--red); color: var(--red-ink); border-bottom: 6px solid var(--red-deep); }
+.carcasa .wrap { padding-block: 28px 24px; display: grid; gap: 18px; }
+.luces { display: flex; align-items: center; gap: 10px; }
+.luz { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(0,0,0,.45); }
+.luz.grande { width: 46px; height: 46px; border: 4px solid #fff; background: radial-gradient(circle at 35% 35%, #c9ecff, #2aa9f5 45%, #1764b0); box-shadow: 0 0 0 3px rgba(0,0,0,.35); }
+.l1 { background: #ff3b3b; } .l2 { background: #ffcf1f; } .l3 { background: #3ccf72; }
+.carcasa h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 5vw, 2.8rem); margin: 0; letter-spacing: .02em; text-shadow: 3px 3px 0 var(--red-deep); }
+.carcasa .sub { margin: 0; max-width: 62ch; font-size: 1.08rem; }
+.progreso { display: grid; gap: 6px; max-width: 520px; }
+.progreso-label { font-family: var(--font-display); font-size: .78rem; letter-spacing: .04em; }
+.barra { height: 14px; background: rgba(0,0,0,.28); border: 2px solid rgba(0,0,0,.4); border-radius: 3px; overflow: hidden; }
+.barra > span { display: block; height: 100%; width: 0; background: #ffcf1f; transition: width .3s; }
+
+/* ---------- Navegación ---------- */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; gap: 6px; overflow-x: auto; padding-block: 10px; scrollbar-width: thin; }
+.nav a { flex: none; font-family: var(--font-display); font-size: .74rem; text-decoration: none; color: var(--ink); padding: 6px 10px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-2); }
+.nav a:hover { border-color: var(--red); }
+.nav a.hecho { border-color: var(--green); color: var(--green); }
+
+/* ---------- Secciones ---------- */
+main { padding-block: 8px 64px; }
+section { padding-top: 40px; scroll-margin-top: 70px; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; border-bottom: 3px solid var(--ink); padding-bottom: 10px; margin-bottom: 18px; }
+.sec-head h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.25rem, 3.4vw, 1.8rem); margin: 0; }
+.sec-head .kicker { display: block; font-family: var(--font-mono); font-size: .78rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+.domino { font: 600 .9rem var(--font-body); border: 2px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.domino[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+.lead { max-width: 68ch; color: var(--muted); margin-top: 0; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+.grid-2 > * { min-width: 0; }
+
+/* Misión */
+.mision { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 12px; }
+.bloque-tiempo { background: var(--panel); border: 1px solid var(--line); border-left: 6px solid var(--red); border-radius: 8px; padding: 14px 16px; }
+.bloque-tiempo b { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; display: block; }
+.tabla-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; background: var(--panel); border: 1px solid var(--line); }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-mono); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); background: var(--panel-2); }
+
+/* Historias de usuario */
+.hu { background: var(--panel); border: 1px solid var(--line); border-top: 6px solid var(--blue); border-radius: 10px; padding: 18px; margin-bottom: 18px; display: grid; gap: 12px; }
+.hu.hu-b { border-top-color: var(--gold); }
+.hu h3 { margin: 0; font-size: 1.25rem; }
+.hu .ramas { margin: 0; font-family: var(--font-mono); font-size: .8rem; color: var(--muted); }
+.historia { margin: 0; padding: 12px 14px; background: var(--panel-2); border-radius: 8px; font-size: 1.05rem; }
+.historia b { color: var(--red); }
+.hu td:first-child { width: 34%; }
+
+/* Demo */
+.pasos { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.paso { display: grid; grid-template-columns: 90px 1fr; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.paso > * { min-width: 0; }
+.paso .min { font-family: var(--font-mono); font-weight: 600; color: var(--red); font-size: .9rem; }
+.paso h3 { margin: 0 0 4px; font-size: 1.08rem; }
+.paso .accion { margin: 0 0 8px; }
+.di { margin: 0; padding: 10px 12px; border-left: 4px solid var(--blue); background: var(--blue-soft); border-radius: 0 6px 6px 0; font-style: italic; }
+.di::before { content: "Di: "; font-style: normal; font-weight: 700; color: var(--blue); }
+@media (max-width: 560px) { .paso { grid-template-columns: 1fr; gap: 6px; } }
+
+/* Diagramas */
+.mapa-diagramas { display: grid; gap: 14px; }
+.diagrama { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; }
+.diagrama h3 { margin: 0 0 8px; font-size: 1rem; }
+pre.mermaid { margin: 0; background: transparent; font-family: var(--font-body); }
+
+/* Filtros */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chip { font: 600 .85rem var(--font-body); border: 2px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Conceptos */
+.conceptos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 14px; }
+.concepto { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.concepto header { display: grid; gap: 6px; }
+.concepto h3 { margin: 0; font-size: 1.1rem; }
+.concepto .chimp { margin: 0; }
+.lab { justify-self: start; font-family: var(--font-display); font-size: .68rem; padding: 2px 8px; border-radius: 4px; color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,.35); }
+.lab-c09 { background: #4f8a3a; } .lab-c10 { background: #2f6fc0; } .lab-c11 { background: #8a46b0; } .lab-c12 { background: #c8102e; } .lab-pro { background: #a2700a; }
+details.trampa { border-top: 1px dashed var(--line); padding-top: 8px; }
+details.trampa summary { cursor: pointer; font-weight: 700; color: var(--gold); }
+details.trampa summary::before { content: "Si te preguntan: "; color: var(--muted); font-weight: 400; }
+details.trampa p { margin: 6px 0 0; }
+
+/* Código */
+.code-wrap { display: flex; background: var(--code-bg); color: var(--code-ink); border-radius: 8px; overflow-x: auto; font-family: var(--font-mono); font-size: .84rem; line-height: 1.6; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+.code-wrap pre { margin: 0; padding: 12px 14px; white-space: pre; }
+.code-wrap .gutter { color: var(--code-dim); text-align: right; user-select: none; border-right: 1px solid #2d323c; padding-right: 10px; }
+.code-wrap code { background: none; border: 0; padding: 0; font-size: 1em; color: inherit; overflow-wrap: normal; }
+.code-wrap.snip { font-size: .8rem; }
+.t-kw { color: var(--t-kw); } .t-str { color: var(--t-str); } .t-com { color: var(--t-com); font-style: italic; }
+.t-num { color: var(--t-num); } .t-fn { color: var(--t-fn); } .t-tag { color: var(--t-tag); }
+
+.indice { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 6px; margin-bottom: 18px; }
+.indice a { display: flex; gap: 10px; align-items: baseline; text-decoration: none; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; font-size: .92rem; }
+.indice a:hover { border-color: var(--red); }
+.indice .lineas { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); flex: none; width: 56px; }
+.bloque { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; scroll-margin-top: 70px; }
+.bloque header .meta { margin: 0; font-family: var(--font-mono); font-size: .76rem; color: var(--muted); }
+.bloque header h3 { margin: 2px 0 12px; font-size: 1.15rem; }
+.bloque-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.bloque-explica { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.bloque-explica > * { min-width: 0; }
+@media (max-width: 760px) { .bloque-explica { grid-template-columns: minmax(0, 1fr); } }
+.bloque-explica h4 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 400; font-size: .85rem; color: var(--red); }
+.bloque-explica ol { margin: 0 0 12px; padding-left: 1.2em; display: grid; gap: 4px; }
+.pregunta-profe { background: var(--gold-soft); border-radius: 8px; padding: 10px 12px; }
+.pregunta-profe p { margin: 0; }
+.pp-label { font-family: var(--font-mono); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); }
+.pp-q { font-weight: 700; margin: 2px 0 4px !important; }
+
+/* Flashcards */
+.flashes { display: grid; gap: 8px; }
+.flash { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.flash summary { cursor: pointer; padding: 12px 14px; display: flex; gap: 10px; align-items: baseline; list-style: none; }
+.flash summary::-webkit-details-marker { display: none; }
+.flash summary::after { content: "Ver respuesta"; margin-left: auto; flex: none; font-size: .78rem; color: var(--blue); font-weight: 700; }
+.flash[open] summary::after { content: "Ocultar"; }
+.flash .cat { flex: none; font-family: var(--font-mono); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); width: 64px; }
+.flash .q { font-weight: 700; min-width: 0; }
+.flash p { margin: 0; padding: 0 14px 14px 88px; }
+@media (max-width: 560px) { .flash .cat { display: none; } .flash p { padding-left: 14px; } .flash summary::after { content: "+"; } .flash[open] summary::after { content: "−"; } }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.btn { font: 700 .9rem var(--font-body); border: 2px solid var(--ink); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 7px 14px; cursor: pointer; box-shadow: 3px 3px 0 var(--line); }
+.btn.primario { background: var(--red); border-color: var(--red-deep); color: var(--red-ink); }
+.btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* Quiz */
+.quiz { display: grid; gap: 12px; }
+.pregunta { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.pregunta fieldset { border: 0; margin: 0; padding: 0; }
+.pregunta legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
+.pregunta label { display: flex; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.pregunta label:hover { background: var(--panel-2); }
+.pregunta .resultado { margin: 8px 0 0; padding: 8px 10px; border-radius: 6px; }
+.pregunta .resultado.bien { background: var(--green-soft); color: var(--green); }
+.pregunta .resultado.mal { background: var(--gold-soft); color: var(--gold); }
+.puntaje { font-family: var(--font-display); font-size: 1.1rem; }
+
+/* Chuleta */
+.chuleta { counter-reset: c; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px; list-style: none; padding: 0; margin: 0; }
+.chuleta li { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px 12px 48px; position: relative; }
+.chuleta li::before { counter-increment: c; content: counter(c); position: absolute; left: 12px; top: 10px; font-family: var(--font-display); color: var(--red); font-size: 1.1rem; }
+.nota { background: var(--blue-soft); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.nota p { margin: 0; }
+footer.pie { border-top: 1px solid var(--line); padding-block: 24px; color: var(--muted); font-size: .9rem; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+
+<header class="carcasa">
+  <div class="wrap">
+    <div class="luces" aria-hidden="true"><span class="luz grande"></span><span class="luz l1"></span><span class="luz l2"></span><span class="luz l3"></span></div>
+    <h1>POKÉDEX · MODO ESTUDIO</h1>
+    <p class="sub">Todo lo del Módulo 3 explicado en simple: el guion de la demo, cada concepto de los labs 09–12, <strong>todo tu <code style="color:inherit;background:rgba(0,0,0,.2);border-color:rgba(0,0,0,.3)">app.js</code> línea por línea</strong> y las preguntas que te puede hacer el profe.</p>
+    <div class="progreso">
+      <span class="progreso-label" id="progreso-texto">SECCIONES DOMINADAS: 0 / 10</span>
+      <div class="barra" role="progressbar" aria-labelledby="progreso-texto" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="progreso-barra"><span></span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Secciones">
+  <div class="wrap">
+    <a href="#mision">1 Misión</a>
+    <a href="#historias">2 Tus HU</a>
+    <a href="#demo">3 Demo</a>
+    <a href="#mapa">4 Mapa</a>
+    <a href="#conceptos">5 Conceptos</a>
+    <a href="#codigo">6 Código</a>
+    <a href="#preguntas">7 Preguntas</a>
+    <a href="#quiz">8 Quiz</a>
+    <a href="#planb">9 Plan B</a>
+    <a href="#chuleta">10 Chuleta</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ================= 1. MISIÓN ================= -->
+<section id="mision" data-seccion="mision">
+  <div class="sec-head"><div><span class="kicker">Paso 1</span><h2>Tu misión: 10 minutos</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">La presentación tiene dos mitades. En la primera muestras la app funcionando; en la segunda defiendes tus decisiones y explicas el código que te pida el profe.</p>
+  <div class="mision">
+    <div class="bloque-tiempo"><b>5 min</b>Demo: búsqueda real, tarjeta, tus 2 historias de usuario y <strong>provocar un error</strong> para mostrar que no se rompe.</div>
+    <div class="bloque-tiempo"><b>5 min</b>Argumentación: al menos 2 decisiones técnicas + explicar 1 fragmento de código que elija el profe.</div>
+    <div class="bloque-tiempo"><b>2 HU</b>HU-A: estadísticas con barras. HU-B: filtrar por tipo. Cada una en su rama con Pull Request.</div>
+  </div>
+  <h3>Cómo te van a evaluar (rúbrica, 5 × 20 pts)</h3>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Criterio</th><th>Qué miran</th><th>Lo que tú tienes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>HU implementadas</strong></td><td>Al menos 2 historias nuevas funcionando</td><td>HU-A (barras) y HU-B (filtro por tipo), con criterios de aceptación en el README. Detalle en la sección 2</td></tr>
+      <tr><td><strong>Calidad técnica</strong></td><td>async + fetch + manejo de errores</td><td><code>async/await</code>, <code>Promise.all</code>, <code>try/catch/finally</code>, <code>response.ok</code>, 404 → aviso neutro, Reintentar</td></tr>
+      <tr><td><strong>Presentación en vivo</strong></td><td>Demo clara de 5 minutos</td><td>El guion de la sección 3</td></tr>
+      <tr><td><strong>Argumentación técnica</strong></td><td>2 decisiones justificadas</td><td><code>response.ok</code>, <code>finally</code>, adaptador, 404 ≠ error</td></tr>
+      <tr><td><strong>Desafío</strong></td><td>Explicar un fragmento + deploy + README</td><td>Sitio en GitHub Pages, README completo, y la sección 6 de esta guía</td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota" style="margin-top:14px"><p><strong>Tus enlaces:</strong> repo <a href="https://github.com/naaria/pokedex">github.com/naaria/pokedex</a> · sitio <a href="https://naaria.github.io/pokedex/">naaria.github.io/pokedex</a></p></div>
+</section>
+
+<!-- ================= 2. HISTORIAS DE USUARIO ================= -->
+<section id="historias" data-seccion="historias">
+  <div class="sec-head"><div><span class="kicker">Paso 2</span><h2>Tus 2 historias de usuario</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">El proyecto pide al menos 2 historias NUEVAS (no las de los labs), cada una en su rama con Pull Request, y demostrarlas en vivo. Estas son las tuyas. En la demo, muestra cada criterio de aceptación funcionando.</p>
+
+  <article class="hu">
+    <h3>HU-A · Estadísticas con barras</h3>
+    <p class="ramas">Rama <code>feature/hu-barras-stats</code> · Pull Request #4 · mergeado en main</p>
+    <p class="historia"><b>Como</b> entrenador, <b>quiero</b> ver las estadísticas del Pokémon que busqué como barras de colores <b>para</b> comparar de un vistazo qué tan fuerte es antes de capturarlo.</p>
+    <div class="tabla-wrap"><table>
+      <thead><tr><th>Criterio de aceptación</th><th>Cómo lo demuestras en vivo</th><th>Dónde está en app.js</th></tr></thead>
+      <tbody>
+        <tr><td>Muestra las 6 estadísticas con su nombre en español y su valor numérico.</td><td>Busca <code>charizard</code>: PS 78, Ataque 84, Defensa 78, At. especial 109, Def. especial 85, Velocidad 100.</td><td>Traducciones en <code>nombresStats</code> (216–224); cada fila en <code>crearBarrasStats</code> (239–248).</td></tr>
+        <tr><td>Cada barra es proporcional al valor sobre 255 y cambia de color según el nivel: rojo &lt; 50, amarillo 50–89, verde ≥ 90.</td><td>En charizard, At. especial (109) y Velocidad (100) salen verdes; las demás amarillas. Busca <code>eevee</code>: At. especial (45) sale roja.</td><td><code>STAT_MAXIMA = 255</code> (225), ancho con regla de tres (239), <code>colorBarra</code> (228–232).</td></tr>
+        <tr><td>Se muestra el total de estadísticas base.</td><td>Charizard: Total 534. Eevee: Total 325.</td><td><code>stats.reduce((suma, s) =&gt; suma + s.valor, 0)</code> (250).</td></tr>
+        <tr><td>Accesible: el número va escrito junto a la barra y la barra es decorativa.</td><td>Señala que cada barra tiene su número al lado: la información no depende solo del color.</td><td><code>aria-hidden="true"</code> en la barra (244).</td></tr>
+      </tbody>
+    </table></div>
+    <p class="di">Mi primera historia es para quien está decidiendo si capturar un Pokémon: en vez de números sueltos, ve barras de colores. El ancho sale de una regla de tres sobre 255, que es el máximo posible, el color depende del nivel y abajo está el total. Las barras se agregan solo en el resultado de búsqueda, sin tocar crearTarjeta.</p>
+  </article>
+
+  <article class="hu hu-b">
+    <h3>HU-B · Filtrar la Pokédex por tipo</h3>
+    <p class="ramas">Rama <code>feature/hu-filtro-tipo</code> · Pull Request #5 · mergeado en main</p>
+    <p class="historia"><b>Como</b> entrenador, <b>quiero</b> filtrar mi Pokédex por tipo (fuego, agua, planta…) <b>para</b> encontrar rápido a los Pokémon de un tipo cuando mi colección crece.</p>
+    <div class="tabla-wrap"><table>
+      <thead><tr><th>Criterio de aceptación</th><th>Cómo lo demuestras en vivo</th><th>Dónde está en app.js</th></tr></thead>
+      <tbody>
+        <tr><td>Hay un botón por cada tipo de la colección actual, con su cantidad, más un botón "Todos".</td><td>Al cargar: TODOS 6, ELECTR 1, FAIRY 1, FIRE 1, GHOST 1, GRASS 1, NORMAL 1, POISON 2, WATER 1.</td><td><code>renderFiltros</code> (111–120): tipos únicos con <code>new Set(flatMap)</code> y conteo con <code>filter().length</code>.</td></tr>
+        <tr><td>Al pulsar un tipo se ven solo los de ese tipo; "Todos" vuelve a la colección completa.</td><td>Pulsa POISON: Bulbasaur y Gengar (los de doble tipo aparecen en ambos filtros). Pulsa TODOS: vuelven los 6.</td><td><code>mostrarColeccion</code> (122–134) filtra con <code>p.tipos.includes(tipoActivo)</code>.</td></tr>
+        <tr><td>El filtro se mantiene al capturar, cargar más o quitar; si se quita el último de un tipo, vuelve a "Todos".</td><td>Captura charizard → filtra FIRE → "Cargar más" suma a Charmeleon sin perder el filtro. Filtra GHOST → quita a Gengar → vuelve a TODOS.</td><td>Todas esas acciones llaman a <code>mostrarColeccion()</code> (líneas 64, 175, 212, 336); el reinicio a "todos" está en 125–127.</td></tr>
+        <tr><td>Accesible: el botón activo se anuncia y se distingue sin depender del color.</td><td>Muestra que el botón activo tiene un contorno oscuro.</td><td><code>aria-pressed</code> (101) y <code>aria-label="Filtrar por tipo"</code> en el HTML; contorno en el CSS de <code>.tipo[aria-pressed="true"]</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="di">Mi segunda historia es para cuando la colección crece: botones por tipo con la cantidad de cada uno. Los tipos salen de la colección actual, así que si capturo un Pokémon de un tipo nuevo, aparece su botón. Para que el filtro no se pierda, reemplacé todas las llamadas a render(pokedex) por una función, mostrarColeccion, que aplica el filtro y llama al mismo render del Lab 09.</p>
+  </article>
+
+  <div class="nota"><p><strong>¿Por qué estas dos?</strong> Están en la lista de ideas del enunciado ("mostrar las estadísticas con barras" y "filtrar por tipo"), se ven claramente en una demo y usan lo aprendido en el módulo: <code>map</code>, <code>reduce</code>, <code>Set</code>, <code>flatMap</code>, estado y el patrón render. Ojo: buscar por número, Quitar y Reintentar son <strong>logros de los labs</strong>, no tus historias del proyecto.</p></div>
+</section>
+
+<!-- ================= 3. DEMO ================= -->
+<section id="demo" data-seccion="demo">
+  <div class="sec-head"><div><span class="kicker">Paso 3</span><h2>El guion de la demo</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">Ensáyalo 3 veces en voz alta con el sitio abierto. Ten la pestaña lista antes de empezar y DevTools cerrado (lo abres solo en el paso 6 del guion).</p>
+  <ol class="pasos">
+    <li class="paso"><span class="min">0:00–0:30</span><div><h3>1. Presenta la app</h3><p class="accion">Pantalla con la Pokédex ya abierta.</p><p class="di">Mi proyecto es una Pokédex que consume la PokeAPI, una API pública. Carga una colección inicial, busca cualquier Pokémon por nombre o número, muestra sus estadísticas y me deja capturarlo.</p></div></li>
+    <li class="paso"><span class="min">0:30–1:15</span><div><h3>2. Recarga la página (carga inicial)</h3><p class="accion">Presiona <code>Cmd + R</code>. Se ve la Pokébola girando y luego las 6 tarjetas.</p><p class="di">Al abrir, la app pide 6 Pokémon a la vez con Promise.all. Mientras llegan se ve el spinner, y lo oculto en finally para que desaparezca siempre, haya éxito o error.</p></div></li>
+    <li class="paso"><span class="min">1:15–2:15</span><div><h3>3. Busca <code>charizard</code> y presiona Enter (HU-A)</h3><p class="accion">Aparece su tarjeta con las barras de estadísticas.</p><p class="di">Esta es mi primera historia de usuario: las estadísticas en barras de colores. El ancho es una regla de tres sobre 255, el máximo posible, y el color cambia: rojo bajo 50, amarillo hasta 89, verde desde 90. El número también está escrito, así no depende solo del color.</p></div></li>
+    <li class="paso"><span class="min">2:15–2:50</span><div><h3>4. Captura y vuelve a capturar</h3><p class="accion">Clic en <strong>⚡ Capturar</strong>. Charizard se une a la rejilla. Búscalo otra vez y captura: no se duplica.</p><p class="di">Capturar lo agrega a mi colección, que es el estado de la app. Antes de agregar reviso con .some si ya hay uno con ese nombre, por eso no se duplica.</p></div></li>
+    <li class="paso"><span class="min">2:50–3:45</span><div><h3>5. Filtra por <em>fire</em> y pulsa "Cargar más" (HU-B)</h3><p class="accion">Clic en el botón FIRE: solo Charmander y Charizard. Luego "Cargar más": aparece Charmeleon y el filtro se mantiene.</p><p class="di">Mi segunda historia: filtrar por tipo. Los botones salen de los tipos que hay en mi colección, con la cantidad de cada uno. "Cargar más" usa los parámetros limit y offset de la API para traer la siguiente página, y el filtro se mantiene porque todo pasa por una función, mostrarColeccion.</p></div></li>
+    <li class="paso"><span class="min">3:45–4:40</span><div><h3>6. Provoca errores</h3><p class="accion">a) Busca <code>pikachuu</code>: sale el aviso "No se encontró". b) Opcional: abre DevTools (<code>Cmd + Option + I</code>) → pestaña <strong>Network</strong> → cambia "No throttling" por <strong>Offline</strong> → busca <code>eevee</code>: sale el error rojo con <strong>Reintentar</strong>. Vuelve a "No throttling" y pulsa Reintentar.</p><p class="di">Si busco un nombre que no existe, la API responde 404. fetch no falla por un 404, así que lo reviso a mano y muestro un aviso neutro, porque no es un error de la app. Si se cae la conexión, eso sí es un error: lo atrapo en el catch, muestro un mensaje y un botón para reintentar. La app nunca se rompe.</p></div></li>
+    <li class="paso"><span class="min">4:40–5:00</span><div><h3>7. Cierra</h3><p class="accion">Vuelve a la colección pulsando "Todos".</p><p class="di">Todo está en GitHub, cada lab e historia en su propia rama con Pull Request, y documentado en el README.</p></div></li>
+  </ol>
+  <h3 style="margin-top:22px">Segunda mitad: argumentación (elige 2 y prepara las 4)</h3>
+  <div class="grid-2">
+    <div class="panel"><h4 style="margin-top:0">¿Por qué valido <code>response.ok</code>?</h4><p>fetch solo falla si no hay red. Un 404 o un 500 llegan como respuestas normales. Si no los reviso, intentaría leer datos que no existen. Validarlo me deja dar un mensaje claro y distinguir "no existe" de "se rompió".</p></div>
+    <div class="panel"><h4 style="margin-top:0">¿Por qué el spinner va en <code>finally</code>?</h4><p>finally corre siempre. Si lo ocultara al final del try, un error saltaría al catch y el spinner se quedaría girando. Se puede comprobar moviéndolo: con "pikachuu" el spinner se queda pegado.</p></div>
+    <div class="panel"><h4 style="margin-top:0">¿Por qué una función adaptadora?</h4><p>La API tiene su estructura (name, sprites.front_default, types[].type.name) y mi app la suya. El adaptador traduce en un solo lugar, por eso crearTarjeta y render no cambiaron desde el Lab 09 aunque los datos ahora vienen de internet.</p></div>
+    <div class="panel"><h4 style="margin-top:0">¿Por qué 404 devuelve <code>null</code> y no un error?</h4><p>Porque la búsqueda funcionó, solo no hay resultado. Así separo "no hay nada" (aviso neutro) de "algo se rompió" (mensaje rojo con Reintentar). Cada caso le dice algo útil al usuario.</p></div>
+  </div>
+</section>
+
+<!-- ================= 3. MAPA ================= -->
+<section id="mapa" data-seccion="mapa">
+  <div class="sec-head"><div><span class="kicker">Paso 4</span><h2>El mapa de la app</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">Antes de mirar el código, entiende el recorrido de los datos. Si entiendes estos 3 dibujos, entiendes la app.</p>
+  <div class="mapa-diagramas">
+    <div class="diagrama"><h3>A. Al abrir la página</h3>
+<pre class="mermaid">
+flowchart TD
+  A[Se abre la página] --> B["cargarPokedex()"]
+  B --> C[Muestra el spinner]
+  C --> D["Promise.all: 6 fetch a la vez"]
+  D -->|todo bien| E["adaptarPokemon x6"]
+  E --> F["mostrarColeccion()"]
+  F --> G["renderFiltros + render(lista)"]
+  D -->|algo falla| H["catch: error + Reintentar"]
+  G --> I["finally: oculta el spinner"]
+  H --> I
+</pre></div>
+    <div class="diagrama"><h3>B. Cuando buscas</h3>
+<pre class="mermaid">
+sequenceDiagram
+  participant P as Persona
+  participant B as mostrarBusqueda
+  participant O as obtenerPokemon
+  participant API as PokeAPI
+  P->>B: escribe charizard + Enter
+  B->>B: muestra spinner
+  B->>O: buscarPokemon(charizard)
+  O->>API: fetch /pokemon/charizard
+  API-->>O: 200 + JSON
+  O-->>B: Pokémon adaptado
+  B->>P: tarjeta + barras + Capturar
+  B->>B: finally: oculta spinner
+</pre></div>
+  </div>
+  <div class="diagrama" style="margin-top:14px"><h3>C. Qué pasa con cada respuesta (el árbol de errores)</h3>
+<pre class="mermaid">
+flowchart LR
+  A["await fetch(url)"] -->|sin internet| T["TypeError → catch → Revisa tu conexión + Reintentar"]
+  A -->|responde| S{"response.status"}
+  S -->|404| N["return null → aviso neutro: No se encontró"]
+  S -->|500 o 503| X["throw new Error → catch → mensaje rojo + Reintentar"]
+  S -->|200| OK["response.json() → tarjeta"]
+</pre></div>
+  <h3 style="margin-top:22px">Las piezas del HTML que usa el JavaScript</h3>
+  <div class="code-wrap snip"><pre class="code"><code><span class="t-tag">&lt;input</span> id=<span class="t-str">&quot;buscador&quot;</span> ...<span class="t-tag">&gt;</span>          <span class="t-com">&lt;!-- donde escribes --&gt;</span>
+<span class="t-tag">&lt;button</span> id=<span class="t-str">&quot;btn-buscar&quot;</span><span class="t-tag">&gt;</span>Buscar<span class="t-tag">&lt;/button</span><span class="t-tag">&gt;</span>
+<span class="t-tag">&lt;div</span> id=<span class="t-str">&quot;spinner&quot;</span> class=<span class="t-str">&quot;hidden&quot;</span> role=<span class="t-str">&quot;status&quot;</span><span class="t-tag">&gt;</span>…<span class="t-tag">&lt;/div</span><span class="t-tag">&gt;</span>    <span class="t-com">&lt;!-- estado: cargando --&gt;</span>
+<span class="t-tag">&lt;div</span> id=<span class="t-str">&quot;mensaje&quot;</span> class=<span class="t-str">&quot;hidden&quot;</span> role=<span class="t-str">&quot;alert&quot;</span><span class="t-tag">&gt;</span><span class="t-tag">&lt;/div</span><span class="t-tag">&gt;</span>      <span class="t-com">&lt;!-- estado: error --&gt;</span>
+<span class="t-tag">&lt;div</span> id=<span class="t-str">&quot;filtros&quot;</span> role=<span class="t-str">&quot;group&quot;</span> aria-label=<span class="t-str">&quot;Filtrar por tipo&quot;</span><span class="t-tag">&gt;</span><span class="t-tag">&lt;/div</span><span class="t-tag">&gt;</span>  <span class="t-com">&lt;!-- HU-B --&gt;</span>
+<span class="t-tag">&lt;div</span> id=<span class="t-str">&quot;resultado&quot;</span> class=<span class="t-str">&quot;grid grid-cols-2 md:grid-cols-3&quot;</span><span class="t-tag">&gt;</span><span class="t-tag">&lt;/div</span><span class="t-tag">&gt;</span>  <span class="t-com">&lt;!-- tarjetas --&gt;</span>
+<span class="t-tag">&lt;button</span> id=<span class="t-str">&quot;cargar-mas&quot;</span><span class="t-tag">&gt;</span>Cargar más<span class="t-tag">&lt;/button</span><span class="t-tag">&gt;</span>
+<span class="t-tag">&lt;script</span> src=<span class="t-str">&quot;js/app.js&quot;</span><span class="t-tag">&gt;</span><span class="t-tag">&lt;/script</span><span class="t-tag">&gt;</span>   <span class="t-com">&lt;!-- al final del body: el HTML ya existe --&gt;</span></code></pre></div>
+</section>
+
+<!-- ================= 4. CONCEPTOS ================= -->
+<section id="conceptos" data-seccion="conceptos">
+  <div class="sec-head"><div><span class="kicker">Paso 5</span><h2>Conceptos en modo chimp</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">34 conceptos, cada uno con una explicación simple, un ejemplo de TU código y la pregunta trampa que te pueden hacer. Filtra por laboratorio.</p>
+  <div class="chips" role="group" aria-label="Filtrar conceptos por laboratorio" id="filtro-labs">
+    <button type="button" class="chip" data-lab="todos" aria-pressed="true">Todos</button>
+    <button type="button" class="chip" data-lab="C09" aria-pressed="false">Lab 09 · JS moderno</button>
+    <button type="button" class="chip" data-lab="C10" aria-pressed="false">Lab 10 · fetch</button>
+    <button type="button" class="chip" data-lab="C11" aria-pressed="false">Lab 11 · async/await</button>
+    <button type="button" class="chip" data-lab="C12" aria-pressed="false">Lab 12 · errores</button>
+    <button type="button" class="chip" data-lab="PRO" aria-pressed="false">Proyecto</button>
+  </div>
+  <div class="conceptos" id="lista-conceptos">
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Template literal</h3></header>
+      <p class="chimp">Un texto con comillas invertidas <code>`</code> donde metes variables con <code>${ }</code>. Como rellenar los espacios en blanco de un formulario.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> numeroDex = numero ? <span class="t-str">`Nº${String(numero).padStart(3, &quot;0&quot;)}`</span> : <span class="t-str">&quot;&quot;</span>;</code></pre></div>
+      <details class="trampa"><summary>¿Qué diferencia hay con las comillas normales?</summary><p>Con backticks puedo meter variables con <code>${}</code> y escribir varias líneas. Con comillas normales tendría que concatenar con <code>+</code>.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Destructuring de objeto</h3></header>
+      <p class="chimp">Sacar varias propiedades de un objeto a variables en una sola línea. Es abrir la mochila y poner cada cosa en la mesa.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> { nombre, imagen, tipos, numero } = pokemon;
+<span class="t-com">// es lo mismo que:</span>
+<span class="t-com">// const nombre = pokemon.nombre; const imagen = pokemon.imagen; ...</span></code></pre></div>
+      <details class="trampa"><summary>¿Para qué sirve?</summary><p>Para no repetir <code>pokemon.</code> todo el tiempo. El código queda más corto y se lee mejor.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Destructuring de array (con valor por defecto)</h3></header>
+      <p class="chimp">Igual que el de objeto, pero por posición. Tomo el primer elemento del array y, si no existe, uso un valor de respaldo.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> [principal = <span class="t-str">&quot;desconocido&quot;</span>] = tipos ?? [];
+<span class="t-com">// tipos = [&quot;fire&quot;, &quot;flying&quot;]  →  principal = &quot;fire&quot;</span></code></pre></div>
+      <details class="trampa"><summary>¿Y si tipos no existe?</summary><p>El <code>?? []</code> me da un array vacío, así que <code>principal</code> toma el valor por defecto <code>"desconocido"</code> y no se rompe.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Spread <code>...</code></h3></header>
+      <p class="chimp">Los tres puntos "vacían" un array (o un Set) dentro de otro. Como volcar una bolsa de caramelos en un tazón nuevo.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> tipos = [...<span class="t-kw">new</span> <span class="t-fn">Set</span>(pokedex.<span class="t-fn">flatMap</span>(p =&gt; p.tipos))].<span class="t-fn">sort</span>();
+<span class="t-com">// en el Lab 09: const ampliada = [...pokemonLocal, nuevo];</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué <code>[...new Set(...)]</code>?</summary><p>Un <code>Set</code> elimina repetidos, pero no es un array. Con el spread lo convierto en array para poder usar <code>.sort()</code> y <code>.forEach()</code>.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Optional chaining <code>?.</code></h3></header>
+      <p class="chimp">"Si existe, entra; si no, devuelve undefined en vez de explotar". Evita el error clásico <em>Cannot read properties of undefined</em>.</p>
+      <div class="code-wrap snip"><pre class="code"><code>imagen: data.sprites?.front_default ?? <span class="t-str">&quot;https://via.placeholder.com/96?text=?&quot;</span>,
+<span class="t-kw">const</span> badges = tipos?.<span class="t-fn">map</span>(badgeTipo).<span class="t-fn">join</span>(<span class="t-str">&quot;&quot;</span>) ?? <span class="t-str">&quot;&quot;</span>;</code></pre></div>
+      <details class="trampa"><summary>¿Qué pasa sin el <code>?.</code>?</summary><p>Si <code>data.sprites</code> no existiera, <code>data.sprites.front_default</code> lanzaría un error y la tarjeta no se dibujaría.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Nullish coalescing <code>??</code></h3></header>
+      <p class="chimp">"Si lo de la izquierda es null o undefined, usa lo de la derecha". Es el plan B.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> img = imagen ?? <span class="t-str">&quot;https://via.placeholder.com/96?text=?&quot;</span>;
+<span class="t-kw">const</span> etiqueta = nombresStats[nombre] ?? nombre;</code></pre></div>
+      <details class="trampa"><summary>¿Por qué <code>??</code> y no <code>||</code>?</summary><p><code>||</code> también reemplaza <code>0</code> y <code>""</code>. <code>??</code> solo reemplaza <code>null</code> o <code>undefined</code>. Si una estadística valiera 0, con <code>||</code> la perdería.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Patrón render</h3></header>
+      <p class="chimp">La receta para dibujar una lista: 1) limpiar el contenedor, 2) recorrer los datos, 3) crear un nodo por cada dato, 4) insertarlo. La pantalla es un reflejo de los datos.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">function</span> <span class="t-fn">render</span>(lista) {
+  contenedor.innerHTML = <span class="t-str">&quot;&quot;</span>;        <span class="t-com">// 1. limpia</span>
+  lista.<span class="t-fn">forEach</span>(<span class="t-kw">function</span> (pokemon) { <span class="t-com">// 2. recorre</span>
+    <span class="t-kw">const</span> tarjeta = <span class="t-fn">crearTarjeta</span>(pokemon); <span class="t-com">// 3. crea</span>
+    contenedor.<span class="t-fn">appendChild</span>(tarjeta);       <span class="t-com">// 4. inserta</span>
+  });
+}</code></pre></div>
+      <details class="trampa"><summary>¿Por qué primero limpias?</summary><p>Si no limpio, cada vez que llamo a <code>render</code> se agregarían tarjetas encima de las anteriores y tendría duplicados.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>createElement, appendChild, append, replaceChildren</h3></header>
+      <p class="chimp">Las "manos" del DOM: <code>createElement</code> fabrica una etiqueta, <code>appendChild</code>/<code>append</code> la pegan dentro de otra y <code>replaceChildren</code> borra lo que había y pone lo nuevo.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> boton = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;button&quot;</span>);
+tarjeta.<span class="t-fn">appendChild</span>(boton);
+aviso.<span class="t-fn">append</span>(titulo, ayuda);          <span class="t-com">// varios a la vez</span>
+contenedor.<span class="t-fn">replaceChildren</span>(aviso);    <span class="t-com">// limpia + pone</span></code></pre></div>
+      <details class="trampa"><summary>¿Diferencia entre appendChild y append?</summary><p><code>appendChild</code> recibe un solo nodo. <code>append</code> recibe varios, e incluso texto.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>innerHTML vs textContent</h3></header>
+      <p class="chimp"><code>innerHTML</code> interpreta el texto como HTML (crea etiquetas). <code>textContent</code> lo pone como texto plano, sin interpretar nada.</p>
+      <div class="code-wrap snip"><pre class="code"><code>articulo.innerHTML = <span class="t-str">`&lt;h2&gt;${nombre}&lt;/h2&gt;`</span>;                 <span class="t-com">// datos de la API</span>
+titulo.textContent = <span class="t-str">`🔍 No se encontró &quot;${nombre}&quot;`</span>;  <span class="t-com">// texto que escribió la persona</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué en un lado innerHTML y en otro textContent?</summary><p>Las tarjetas se arman con datos de la PokeAPI. Lo que escribe la persona en el buscador lo muestro con <code>textContent</code>, así si alguien escribe <code>&lt;img onerror=...&gt;</code> se ve como texto y no se ejecuta (eso se llama ataque XSS).</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Eventos</h3></header>
+      <p class="chimp"><code>addEventListener</code> es decirle a un elemento: "cuando pase X, ejecuta esta función". X puede ser <code>click</code>, <code>keydown</code>, <code>input</code>…</p>
+      <div class="code-wrap snip"><pre class="code"><code>buscador.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;keydown&quot;</span>, <span class="t-kw">function</span> (event) {
+  <span class="t-kw">if</span> (event.key === <span class="t-str">&quot;Enter&quot;</span>) boton.<span class="t-fn">click</span>();
+});</code></pre></div>
+      <details class="trampa"><summary>¿Qué es <code>event</code>?</summary><p>Un objeto con información de lo que pasó. <code>event.key</code> dice qué tecla se presionó.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Métodos de array (repaso M2)</h3></header>
+      <p class="chimp"><code>map</code> transforma cada elemento, <code>filter</code> se queda con los que cumplen, <code>some</code> pregunta "¿hay alguno?", <code>forEach</code> recorre sin devolver nada, <code>reduce</code> acumula en un valor, <code>join</code> une en un texto, <code>includes</code> pregunta "¿está?".</p>
+      <div class="code-wrap snip"><pre class="code"><code>pokedex.<span class="t-fn">filter</span>(p =&gt; p.tipos.<span class="t-fn">includes</span>(tipoActivo))   <span class="t-com">// solo los del tipo</span>
+pokedex.<span class="t-fn">some</span>(p =&gt; p.nombre === pokemon.nombre)      <span class="t-com">// ¿ya lo tengo?</span>
+stats.<span class="t-fn">reduce</span>((suma, s) =&gt; suma + s.valor, <span class="t-num">0</span>)        <span class="t-com">// total</span></code></pre></div>
+      <details class="trampa"><summary>¿Diferencia entre map y forEach?</summary><p><code>map</code> devuelve un array nuevo con los resultados. <code>forEach</code> solo recorre y no devuelve nada.</p></details>
+    </article>
+    <article class="concepto" data-lab="C09">
+      <header><span class="lab lab-c09">Lab 09</span><h3>Arrow function <code>=&gt;</code></h3></header>
+      <p class="chimp">Una forma corta de escribir funciones. <code>p =&gt; p.nombre</code> es "dame un p y te devuelvo su nombre".</p>
+      <div class="code-wrap snip"><pre class="code"><code>p =&gt; p.nombre !== pokemon.nombre
+<span class="t-com">// es lo mismo que:</span>
+<span class="t-com">// function (p) { return p.nombre !== pokemon.nombre; }</span></code></pre></div>
+      <details class="trampa"><summary>¿Cuándo uso arrow?</summary><p>Sobre todo cuando paso una función como argumento: <code>.map(...)</code>, <code>.filter(...)</code>, <code>.some(...)</code>.</p></details>
+    </article>
+    <article class="concepto" data-lab="C10">
+      <header><span class="lab lab-c10">Lab 10</span><h3>API, endpoint y JSON</h3></header>
+      <p class="chimp">Una API es un servidor que te da datos si le pides una URL (el <em>endpoint</em>). Los datos viajan como texto en formato JSON, que se parece a un objeto de JavaScript.</p>
+      <div class="code-wrap snip"><pre class="code"><code>https:<span class="t-com">//pokeapi.co/api/v2/pokemon/pikachu</span>
+<span class="t-com">// responde: { &quot;name&quot;: &quot;pikachu&quot;, &quot;id&quot;: 25, &quot;sprites&quot;: {...}, &quot;types&quot;: [...], &quot;stats&quot;: [...] }</span></code></pre></div>
+      <details class="trampa"><summary>¿El JSON es lo mismo que un objeto JS?</summary><p>No. El JSON es texto. Con <code>response.json()</code> lo convierto en un objeto de JavaScript que sí puedo usar.</p></details>
+    </article>
+    <article class="concepto" data-lab="C10">
+      <header><span class="lab lab-c10">Lab 10</span><h3>Asincronía</h3></header>
+      <p class="chimp">Pedir algo por internet tarda. JavaScript no se queda congelado esperando: sigue con lo demás y reacciona cuando llegan los datos. Es como pedir delivery: no te quedas mirando la puerta, sigues viendo tele.</p>
+      <div class="code-wrap snip"><pre class="code"><code>console.<span class="t-fn">log</span>(<span class="t-str">&quot;1. pido los datos…&quot;</span>);
+<span class="t-fn">fetch</span>(url).<span class="t-fn">then</span>(() =&gt; console.<span class="t-fn">log</span>(<span class="t-str">&quot;3. llegaron&quot;</span>));
+console.<span class="t-fn">log</span>(<span class="t-str">&quot;2. sigo trabajando&quot;</span>);
+<span class="t-com">// imprime 1 → 2 → 3</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué sale 1, 2, 3 y no 1, 3, 2?</summary><p>Porque <code>fetch</code> es asíncrono: JavaScript no espera la respuesta, imprime el 2 y recién cuando llegan los datos ejecuta lo del <code>.then</code>.</p></details>
+    </article>
+    <article class="concepto" data-lab="C10">
+      <header><span class="lab lab-c10">Lab 10</span><h3>Promesa</h3></header>
+      <p class="chimp">Un "ticket" por un dato que llegará después. Tiene 3 estados: <em>pending</em> (esperando), <em>fulfilled</em> (llegó) o <em>rejected</em> (falló).</p>
+      <div class="code-wrap snip"><pre class="code"><code>console.<span class="t-fn">log</span>(<span class="t-fn">fetch</span>(url));  <span class="t-com">// Promise { &lt;pending&gt; }</span></code></pre></div>
+      <details class="trampa"><summary>¿Qué devuelve fetch?</summary><p>No devuelve los datos: devuelve una Promesa de esos datos.</p></details>
+    </article>
+    <article class="concepto" data-lab="C10">
+      <header><span class="lab lab-c10">Lab 10</span><h3>fetch + response.json()</h3></header>
+      <p class="chimp">Son dos esperas: <code>fetch</code> espera la respuesta del servidor y <code>response.json()</code> espera a leer el cuerpo y convertirlo en objeto.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> response = <span class="t-kw">await</span> <span class="t-fn">fetch</span>(<span class="t-str">`https://pokeapi.co/api/v2/pokemon/${idONombre}`</span>);
+<span class="t-kw">return</span> response.<span class="t-fn">json</span>();</code></pre></div>
+      <details class="trampa"><summary>¿Por qué hay dos <code>await</code> o dos <code>.then</code>?</summary><p>Porque leer el cuerpo de la respuesta también tarda y también devuelve una Promesa.</p></details>
+    </article>
+    <article class="concepto" data-lab="C10">
+      <header><span class="lab lab-c10">Lab 10</span><h3>Función adaptadora</h3></header>
+      <p class="chimp">Un "traductor". La API habla su idioma (<code>name</code>, <code>sprites.front_default</code>, <code>types[].type.name</code>) y mi app habla el suyo (<code>nombre</code>, <code>imagen</code>, <code>tipos</code>). El adaptador traduce en un solo lugar.</p>
+      <div class="code-wrap snip"><pre class="code"><code>tipos: data.types.<span class="t-fn">map</span>(t =&gt; t.type.name)
+<span class="t-com">// [{ type: { name: &quot;fire&quot; } }, { type: { name: &quot;flying&quot; } }]  →  [&quot;fire&quot;, &quot;flying&quot;]</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué no usar los datos de la API directo?</summary><p>Porque así <code>crearTarjeta</code> y <code>render</code> no cambiaron desde el Lab 09. Si la API cambiara, solo arreglo el adaptador.</p></details>
+    </article>
+    <article class="concepto" data-lab="C10">
+      <header><span class="lab lab-c10">Lab 10</span><h3>Promise.all</h3></header>
+      <p class="chimp">Lanza varios pedidos a la vez y espera a que TODOS terminen. Es mandar a 6 amigos a comprar a la vez en vez de ir tú 6 veces.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> datos = <span class="t-kw">await</span> Promise.<span class="t-fn">all</span>(nombres.<span class="t-fn">map</span>(obtenerPokemon));</code></pre></div>
+      <details class="trampa"><summary>¿Y si uno de los 6 falla?</summary><p><code>Promise.all</code> falla completo (se rechaza) con el primer error. Por eso todo está dentro de <code>try</code> y, si falla, sale "No se pudo cargar la Pokédex." con Reintentar.</p></details>
+    </article>
+    <article class="concepto" data-lab="C11">
+      <header><span class="lab lab-c11">Lab 11</span><h3>async / await</h3></header>
+      <p class="chimp">Otra forma de escribir Promesas que se lee de arriba a abajo. <code>await</code> pausa la función hasta que la Promesa se resuelva y te da el valor directo. Es "azúcar sintáctico": lo mismo que <code>.then</code>, pero más fácil de leer.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-com">// con .then (C10)</span>
+<span class="t-fn">fetch</span>(url).<span class="t-fn">then</span>(r =&gt; r.<span class="t-fn">json</span>()).<span class="t-fn">then</span>(data =&gt; ...);
+<span class="t-com">// con await (C11)</span>
+<span class="t-kw">const</span> response = <span class="t-kw">await</span> <span class="t-fn">fetch</span>(url);
+<span class="t-kw">const</span> data = <span class="t-kw">await</span> response.<span class="t-fn">json</span>();</code></pre></div>
+      <details class="trampa"><summary>¿Puedo usar await en cualquier lado?</summary><p>Solo dentro de una función marcada con <code>async</code>. Y una función <code>async</code> siempre devuelve una Promesa.</p></details>
+    </article>
+    <article class="concepto" data-lab="C11">
+      <header><span class="lab lab-c11">Lab 11</span><h3>Parámetro de ruta vs de consulta</h3></header>
+      <p class="chimp">La ruta dice <strong>qué</strong> recurso quieres (<code>/pokemon/pikachu</code>). La consulta, después del <code>?</code>, dice <strong>cómo</strong> lo quieres (<code>?limit=12&amp;offset=24</code>).</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-fn">fetch</span>(<span class="t-str">`https://pokeapi.co/api/v2/pokemon/${idONombre}`</span>)                    <span class="t-com">// ruta</span>
+<span class="t-fn">fetch</span>(<span class="t-str">`https://pokeapi.co/api/v2/pokemon?limit=12&amp;offset=${offset}`</span>)   <span class="t-com">// consulta</span></code></pre></div>
+      <details class="trampa"><summary>¿Qué hacen limit y offset?</summary><p><code>limit</code> = cuántos traer (12). <code>offset</code> = desde cuál empezar. Subiendo el offset de 12 en 12 obtengo la siguiente página: eso es paginación.</p></details>
+    </article>
+    <article class="concepto" data-lab="C11">
+      <header><span class="lab lab-c11">Lab 11</span><h3>Estado de la app</h3></header>
+      <p class="chimp">Las variables que guardan "cómo está la app ahora": <code>pokedex</code> (mi colección), <code>tipoActivo</code> (el filtro elegido) y <code>offset</code> (por qué página voy). Si cambia el estado, vuelvo a dibujar.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">let</span> pokedex = [];
+<span class="t-kw">let</span> tipoActivo = <span class="t-str">&quot;todos&quot;</span>;
+<span class="t-kw">let</span> offset = <span class="t-num">0</span>;</code></pre></div>
+      <details class="trampa"><summary>¿Por qué <code>let</code> y no <code>const</code>?</summary><p>Porque las reasigno: <code>pokedex = datos.map(...)</code>, <code>pokedex = pokedex.filter(...)</code>, <code>offset += 12</code>. Una <code>const</code> no se puede reasignar.</p></details>
+    </article>
+    <article class="concepto" data-lab="C11">
+      <header><span class="lab lab-c11">Lab 11</span><h3>No duplicar con .some()</h3></header>
+      <p class="chimp">Antes de agregar, pregunto "¿ya hay alguno con este nombre?". Si no hay, lo agrego.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">if</span> (!pokedex.<span class="t-fn">some</span>(p =&gt; p.nombre === pokemon.nombre)) {
+  pokedex.<span class="t-fn">push</span>(pokemon);
+}</code></pre></div>
+      <details class="trampa"><summary>¿Por qué no <code>pokedex.includes(pokemon)</code>?</summary><p>Porque <code>includes</code> compara si es el MISMO objeto en memoria. Si busco charizard dos veces obtengo dos objetos distintos con los mismos datos. Por eso comparo por nombre.</p></details>
+    </article>
+    <article class="concepto" data-lab="C11">
+      <header><span class="lab lab-c11">Lab 11</span><h3>Explorar el JSON</h3></header>
+      <p class="chimp">La API te da muchísimo más de lo que usas. Tu trabajo es navegarlo y sacar lo que sirve: <code>data.id</code> para el número y <code>data.stats</code> para las estadísticas.</p>
+      <div class="code-wrap snip"><pre class="code"><code>stats: data.stats.<span class="t-fn">map</span>(s =&gt; ({ nombre: s.stat.name, valor: s.base_stat }))
+<span class="t-com">// [{ base_stat: 78, stat: { name: &quot;hp&quot; } }, ...] → [{ nombre: &quot;hp&quot;, valor: 78 }, ...]</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué los paréntesis en <code>=&gt; ({ ... })</code>?</summary><p>Para que JavaScript entienda que devuelvo un objeto. Sin paréntesis pensaría que las llaves son el cuerpo de la función.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>try / catch / finally</h3></header>
+      <p class="chimp"><code>try</code>: "intenta esto". <code>catch</code>: "si algo falla, haz esto en vez de romperte". <code>finally</code>: "y pase lo que pase, haz esto al final".</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">try</span> {
+  <span class="t-kw">const</span> pokemon = <span class="t-kw">await</span> <span class="t-fn">buscarPokemon</span>(nombre);
+  ...
+} <span class="t-kw">catch</span> (error) {
+  <span class="t-fn">mostrarError</span>(texto, ...);
+} <span class="t-kw">finally</span> {
+  spinner.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);   <span class="t-com">// SIEMPRE</span>
+}</code></pre></div>
+      <details class="trampa"><summary>¿Por qué el spinner se oculta en finally?</summary><p>Porque <code>finally</code> corre con éxito y con error. Si lo ocultara al final del <code>try</code>, un error saltaría al <code>catch</code> y el spinner se quedaría girando para siempre.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>throw new Error</h3></header>
+      <p class="chimp">Lanzar tu propio error con un mensaje claro. El <code>throw</code> corta el <code>try</code> y salta directo al <code>catch</code>.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">if</span> (!response.ok) {
+  <span class="t-kw">throw</span> <span class="t-kw">new</span> <span class="t-fn">Error</span>(<span class="t-str">`La PokeAPI respondió con un error (${response.status}). Intenta de nuevo.`</span>);
+}</code></pre></div>
+      <details class="trampa"><summary>¿Qué recibe el catch?</summary><p>El objeto <code>Error</code> que lancé. Con <code>error.message</code> leo el texto que escribí.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>response.ok y response.status</h3></header>
+      <p class="chimp">Ojo: <code>fetch</code> SOLO falla si no hay red. Un 404 (no existe) o un 500 (servidor caído) llegan como respuestas "normales". Hay que revisarlas a mano. <code>ok</code> es <code>true</code> solo entre 200 y 299.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">if</span> (response.status === <span class="t-num">404</span>) <span class="t-kw">return</span> <span class="t-kw">null</span>;   <span class="t-com">// no existe</span>
+<span class="t-kw">if</span> (!response.ok) <span class="t-kw">throw</span> <span class="t-kw">new</span> <span class="t-fn">Error</span>(...);      <span class="t-com">// 500, 503…</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué hay que validar response.ok?</summary><p>Porque si no lo hago, con un 404 intentaría leer un JSON que no existe y la app fallaría de forma confusa. Validarlo me deja dar un mensaje claro.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>"No encontrado" no es un error</h3></header>
+      <p class="chimp">Si busco <em>pikachuu</em> la búsqueda funcionó: simplemente no hay resultado. Por eso con 404 devuelvo <code>null</code> y muestro un aviso neutro, distinto del error rojo de "sin conexión".</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> pokemon = <span class="t-kw">await</span> <span class="t-fn">buscarPokemon</span>(nombre);
+<span class="t-kw">if</span> (pokemon === <span class="t-kw">null</span>) {
+  <span class="t-fn">mostrarNoEncontrado</span>(nombre);   <span class="t-com">// aviso neutro</span>
+} <span class="t-kw">else</span> {
+  <span class="t-fn">mostrarResultado</span>(pokemon);
+}</code></pre></div>
+      <details class="trampa"><summary>¿Por qué separar los dos casos?</summary><p>Porque son situaciones distintas para el usuario: "escribiste mal el nombre" no es lo mismo que "se cayó tu internet". Así cada uno ve un mensaje que le sirve.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>Detectar "sin red" con instanceof TypeError</h3></header>
+      <p class="chimp">Cuando no hay internet, <code>fetch</code> lanza un <code>TypeError</code> en todos los navegadores. El texto cambia según el navegador (Chrome: "Failed to fetch", Safari: "Load failed"), por eso reviso el TIPO de error y no el texto.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">const</span> texto = error <span class="t-kw">instanceof</span> TypeError
+  ? <span class="t-str">&quot;Algo salió mal. Revisa tu conexión.&quot;</span>
+  : error.message;</code></pre></div>
+      <details class="trampa"><summary>¿Qué hace el <code>? :</code>?</summary><p>Es un if corto (operador ternario): si es TypeError, usa el primer texto; si no, usa el mensaje del error.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>Estados de UI</h3></header>
+      <p class="chimp">Lo que el usuario ve en cada momento: cargando (<code>#spinner</code>), error (<code>#mensaje</code>), resultado o aviso. Se muestran y ocultan agregando o quitando la clase <code>hidden</code> de Tailwind.</p>
+      <div class="code-wrap snip"><pre class="code"><code>spinner.classList.<span class="t-fn">remove</span>(<span class="t-str">&quot;hidden&quot;</span>);  <span class="t-com">// mostrar</span>
+spinner.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);     <span class="t-com">// ocultar</span></code></pre></div>
+      <details class="trampa"><summary>¿Por qué no borrar y crear el spinner cada vez?</summary><p>Porque ya existe en el HTML. Solo cambio su visibilidad, que es más simple.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>Callback: pasar una función como dato</h3></header>
+      <p class="chimp">En <code>mostrarError(texto, reintentar)</code> el segundo argumento es una FUNCIÓN. El botón Reintentar la ejecuta cuando haces clic. Así un solo botón sirve para repetir cualquier acción.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-fn">mostrarError</span>(<span class="t-str">&quot;No se pudo cargar la Pokédex.&quot;</span>, cargarPokedex);   <span class="t-com">// sin ()</span>
+<span class="t-fn">mostrarError</span>(texto, () =&gt; <span class="t-fn">mostrarBusqueda</span>(nombre));</code></pre></div>
+      <details class="trampa"><summary>¿Por qué <code>cargarPokedex</code> va sin paréntesis?</summary><p>Porque no la quiero ejecutar ahora: la paso para que el botón la ejecute después. Con <code>()</code> se ejecutaría en ese momento.</p></details>
+    </article>
+    <article class="concepto" data-lab="C12">
+      <header><span class="lab lab-c12">Lab 12</span><h3>README en Markdown</h3></header>
+      <p class="chimp">El README es la portada del repo. Markdown es texto simple con símbolos: <code>#</code> título, <code>-</code> lista, <code>**negrita**</code>, <code>[texto](url)</code> enlace y <code>![alt](ruta)</code> imagen.</p>
+      <div class="code-wrap snip"><pre class="code"><code># Pokédex
+## Cómo usarlo
+- Escribe un nombre y presiona **Buscar**
+🔗 [Ver en GitHub Pages](https:<span class="t-com">//naaria.github.io/pokedex/)</span></code></pre></div>
+      <details class="trampa"><summary>¿Qué tiene el tuyo?</summary><p>Descripción, demo, cómo usarlo, tecnologías, funcionalidades por lab, historias de usuario, tabla de errores, decisiones técnicas, estructura y capturas.</p></details>
+    </article>
+    <article class="concepto" data-lab="PRO">
+      <header><span class="lab lab-pro">Proyecto</span><h3>Historia de usuario</h3></header>
+      <p class="chimp">Una funcionalidad contada desde quien la usa: "Como [quién], quiero [qué] para [para qué]" + criterios de aceptación (cómo sé que está terminada).</p>
+      <div class="code-wrap snip"><pre class="code"><code>Como entrenador, quiero ver las estadísticas como barras de colores
+para comparar de un vistazo qué tan fuerte es antes de capturarlo.</code></pre></div>
+      <details class="trampa"><summary>¿Cuáles hiciste?</summary><p>HU-A: estadísticas con barras. HU-B: filtrar la Pokédex por tipo. Cada una en su rama con su Pull Request.</p></details>
+    </article>
+    <article class="concepto" data-lab="PRO">
+      <header><span class="lab lab-pro">Proyecto</span><h3>Ramas y Pull Requests</h3></header>
+      <p class="chimp">Cada cambio se hace en una rama aparte (<code>lab12-errores</code>, <code>feature/hu-barras-stats</code>…). Cuando está listo, abro un Pull Request para que se revise y se mezcle (merge) en <code>main</code>.</p>
+      <div class="code-wrap snip"><pre class="code"><code>main ── lab10-api ── lab11-<span class="t-kw">async</span> ── lab12-errores ── feature/hu-barras-stats ── feature/hu-filtro-tipo ── feature/diseno-retro</code></pre></div>
+      <details class="trampa"><summary>¿Por qué no trabajar directo en main?</summary><p>Porque <code>main</code> es lo que está publicado. Con ramas, si algo sale mal no rompo la versión que ya funciona.</p></details>
+    </article>
+    <article class="concepto" data-lab="PRO">
+      <header><span class="lab lab-pro">Proyecto</span><h3>Variable CSS por elemento</h3></header>
+      <p class="chimp">Cada badge tiene su color en una variable CSS <code>--color</code> que le paso desde JavaScript. El CSS usa ese color para el fondo, el borde y la sombra.</p>
+      <div class="code-wrap snip"><pre class="code"><code><span class="t-kw">return</span> <span class="t-str">`&lt;span class=&quot;tipo&quot; style=&quot;--color: ${color}&quot;&gt;${texto}&lt;/span&gt;`</span>;
+<span class="t-com">/* CSS */</span> .tipo { background: <span class="t-kw">var</span>(--color); }</code></pre></div>
+      <details class="trampa"><summary>¿Por qué no una clase por tipo?</summary><p>Porque son 18 tipos. Con una variable escribo el estilo una sola vez y solo cambia el color.</p></details>
+    </article></div>
+</section>
+
+<!-- ================= 5. CÓDIGO ================= -->
+<section id="codigo" data-seccion="codigo">
+  <div class="sec-head"><div><span class="kicker">Paso 6</span><h2>Tu app.js completo, línea por línea</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">Es tu código real, con los mismos números de línea que tu archivo (versión final, con el arreglo del PR #7). El profe puede señalar cualquier parte: busca el bloque en el índice.</p>
+  <nav class="indice" aria-label="Índice del código"><a href="#cod-colores"><span class="lineas">6–22</span>Colores y badges de tipo</a><a href="#cod-tarjeta"><span class="lineas">24–54</span>crearTarjeta</a><a href="#cod-quitar"><span class="lineas">56–67</span>crearBotonQuitar (Logro 2 del C11)</a><a href="#cod-render"><span class="lineas">69–76</span>render</a><a href="#cod-adaptar"><span class="lineas">78–88</span>adaptarPokemon</a><a href="#cod-estado"><span class="lineas">90–94</span>El estado de la app</a><a href="#cod-botonfiltro"><span class="lineas">96–109</span>crearBotonFiltro (HU-B)</a><a href="#cod-renderfiltros"><span class="lineas">111–120</span>renderFiltros (HU-B)</a><a href="#cod-coleccion"><span class="lineas">122–134</span>mostrarColeccion (HU-B)</a><a href="#cod-error"><span class="lineas">136–149</span>Referencias al DOM + mostrarError (Logro 1 C12)</a><a href="#cod-obtener"><span class="lineas">151–165</span>obtenerPokemon</a><a href="#cod-cargar"><span class="lineas">167–183</span>cargarPokedex</a><a href="#cod-buscar"><span class="lineas">185–191</span>buscarPokemon</a><a href="#cod-noencontrado"><span class="lineas">193–205</span>mostrarNoEncontrado</a><a href="#cod-capturar"><span class="lineas">207–214</span>capturar (HU3 del C11)</a><a href="#cod-statsconf"><span class="lineas">216–232</span>Configuración de las barras (HU-A)</a><a href="#cod-barras"><span class="lineas">234–256</span>crearBarrasStats (HU-A)</a><a href="#cod-resultado"><span class="lineas">258–273</span>mostrarResultado</a><a href="#cod-busqueda"><span class="lineas">275–298</span>mostrarBusqueda</a><a href="#cod-eventos"><span class="lineas">300–307</span>Los eventos del buscador</a><a href="#cod-mas"><span class="lineas">310–344</span>cargarMas</a></nav>
+  
+    <article class="bloque" id="cod-colores">
+      <header>
+        <p class="meta">app.js · líneas 6–22 · Diseño + Logro C09</p>
+        <h3>Colores y badges de tipo</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre><pre class="code"><code><span class="t-kw">const</span> coloresTipo = {
+  fighting: <span class="t-str">&quot;#C03028&quot;</span>, fire: <span class="t-str">&quot;#F08030&quot;</span>, electric: <span class="t-str">&quot;#F8D030&quot;</span>,
+  bug: <span class="t-str">&quot;#A8B820&quot;</span>, grass: <span class="t-str">&quot;#78C850&quot;</span>, ice: <span class="t-str">&quot;#98D8D8&quot;</span>,
+  water: <span class="t-str">&quot;#6890F0&quot;</span>, dragon: <span class="t-str">&quot;#7038F8&quot;</span>, ghost: <span class="t-str">&quot;#705898&quot;</span>,
+  poison: <span class="t-str">&quot;#A040A0&quot;</span>, psychic: <span class="t-str">&quot;#F85888&quot;</span>, flying: <span class="t-str">&quot;#A890F0&quot;</span>,
+  steel: <span class="t-str">&quot;#B8B8D0&quot;</span>, normal: <span class="t-str">&quot;#A8A878&quot;</span>, ground: <span class="t-str">&quot;#E0C068&quot;</span>,
+  rock: <span class="t-str">&quot;#B8A038&quot;</span>, dark: <span class="t-str">&quot;#705848&quot;</span>, fairy: <span class="t-str">&quot;#EE99AC&quot;</span>
+};
+
+<span class="t-com">// Abreviaturas como en la pantalla de la Pokédex</span>
+<span class="t-kw">const</span> abreviaturas = { fighting: <span class="t-str">&quot;fight&quot;</span>, electric: <span class="t-str">&quot;electr&quot;</span>, psychic: <span class="t-str">&quot;psychc&quot;</span> };
+
+<span class="t-kw">function</span> <span class="t-fn">badgeTipo</span>(tipo) {
+  <span class="t-kw">const</span> color = coloresTipo[tipo] ?? <span class="t-str">&quot;#68A090&quot;</span>;
+  <span class="t-kw">const</span> texto = abreviaturas[tipo] ?? tipo;
+  <span class="t-kw">return</span> <span class="t-str">`&lt;span class=&quot;tipo&quot; style=&quot;--color: ${color}&quot;&gt;${texto}&lt;/span&gt;`</span>;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>coloresTipo</code> es un objeto "diccionario": la llave es el tipo en inglés y el valor su color hexadecimal.</li><li><code>abreviaturas</code> guarda los nombres cortos como en la Pokédex del juego (electric → electr).</li><li><code>badgeTipo(tipo)</code> busca el color y el texto. Si el tipo no está en el diccionario, el <code>??</code> pone un color y un texto de respaldo.</li><li>Devuelve un texto HTML (template literal) con la etiqueta <code>&lt;span&gt;</code> y su color en la variable <code>--color</code>.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Qué pasa si la API trae un tipo nuevo que no está en el objeto?</p><p class="pp-a"><code>coloresTipo[tipo]</code> da <code>undefined</code>, el <code>??</code> usa <code>#68A090</code> y el texto queda con el nombre original. No se rompe.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-tarjeta">
+      <header>
+        <p class="meta">app.js · líneas 24–54 · C09 (rediseñada)</p>
+        <h3>crearTarjeta: la tarjeta de cada Pokémon</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54</pre><pre class="code"><code><span class="t-kw">const</span> contenedor = document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;resultado&quot;</span>);
+
+<span class="t-kw">function</span> <span class="t-fn">crearTarjeta</span>(pokemon) {
+  <span class="t-kw">const</span> { nombre, imagen, tipos, numero } = pokemon;    <span class="t-com">// destructuring de objeto</span>
+  <span class="t-kw">const</span> img = imagen ?? <span class="t-str">&quot;https://via.placeholder.com/96?text=?&quot;</span>;   <span class="t-com">// ?? : respaldo si falta la imagen</span>
+  <span class="t-kw">const</span> [principal = <span class="t-str">&quot;desconocido&quot;</span>] = tipos ?? [];      <span class="t-com">// Logro 3: destructuring de array</span>
+
+  <span class="t-com">// ?. : si a un Pokémon le faltaran los tipos, no se rompe</span>
+  <span class="t-kw">const</span> badges = tipos?.<span class="t-fn">map</span>(badgeTipo).<span class="t-fn">join</span>(<span class="t-str">&quot;&quot;</span>) ?? <span class="t-str">&quot;&quot;</span>;
+
+  <span class="t-com">// Número con 3 cifras como en la Pokédex: 25 → &quot;025&quot; (si no hay número, no se muestra)</span>
+  <span class="t-kw">const</span> numeroDex = numero ? <span class="t-str">`Nº${String(numero).padStart(3, &quot;0&quot;)}`</span> : <span class="t-str">&quot;&quot;</span>;
+
+  <span class="t-kw">const</span> articulo = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;article&quot;</span>);
+  articulo.className = <span class="t-str">&quot;tarjeta-dex text-center&quot;</span>;
+  articulo.innerHTML = <span class="t-str">`
+    &lt;div class=&quot;flex items-center gap-2 px-3 py-1.5 bg-[#f8f0b0] border-b-4 border-[#d8c078] text-left&quot;&gt;
+      &lt;span class=&quot;inline-block w-3.5 h-3.5 rounded-full border-2 border-zinc-700 bg-[linear-gradient(180deg,#e3350d_0_45%,#27272a_45%_55%,#fff_55%)]&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;
+      &lt;span class=&quot;text-xl text-zinc-600&quot;&gt;${numeroDex}&lt;/span&gt;
+      &lt;h2 class=&quot;pixel-titulo uppercase text-[0.7rem] sm:text-sm text-zinc-800 truncate&quot;&gt;${nombre}&lt;/h2&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;p-3&quot;&gt;
+      &lt;div class=&quot;marco-sprite mx-auto w-28 h-28 grid place-items-center&quot;&gt;
+        &lt;img src=&quot;${img}&quot; alt=&quot;${nombre}&quot; class=&quot;pixelado w-24 h-24&quot;&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;flex gap-1.5 justify-center mt-3 flex-wrap&quot;&gt;${badges}&lt;/div&gt;
+      &lt;p class=&quot;text-lg text-zinc-500 mt-1 uppercase&quot;&gt;Tipo principal: ${principal}&lt;/p&gt;
+    &lt;/div&gt;
+  `</span>;
+  <span class="t-kw">return</span> articulo;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>contenedor</code> guarda el <code>&lt;div id="resultado"&gt;</code> donde van las tarjetas.</li><li>Destructuring: saca <code>nombre, imagen, tipos, numero</code> del objeto.</li><li><code>??</code> pone una imagen de respaldo si falta; <code>const [principal = "desconocido"]</code> toma el primer tipo.</li><li><code>tipos?.map(badgeTipo).join("")</code>: convierte cada tipo en un badge y los une en un solo texto.</li><li><code>padStart(3, "0")</code> rellena con ceros: 25 → "025".</li><li>Crea el <code>&lt;article&gt;</code> con <code>createElement</code>, le pone el HTML con <code>innerHTML</code> y lo DEVUELVE (no lo inserta: eso lo hace quien la llama).</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué devuelve el nodo en vez de insertarlo?</p><p class="pp-a">Para reusarla: <code>render</code> le agrega el botón Quitar y <code>mostrarResultado</code> le agrega las barras y Capturar. Cada uno decide qué hacer con la tarjeta.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-quitar">
+      <header>
+        <p class="meta">app.js · líneas 56–67 · C11</p>
+        <h3>crearBotonQuitar (Logro 2 del C11)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</pre><pre class="code"><code><span class="t-com">// Logro 2: botón para sacar un Pokémon de la colección</span>
+<span class="t-kw">function</span> <span class="t-fn">crearBotonQuitar</span>(pokemon) {
+  <span class="t-kw">const</span> boton = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;button&quot;</span>);
+  boton.textContent = <span class="t-str">&quot;✕ Quitar&quot;</span>;
+  boton.<span class="t-fn">setAttribute</span>(<span class="t-str">&quot;aria-label&quot;</span>, <span class="t-str">`Quitar a ${pokemon.nombre}`</span>);
+  boton.className = <span class="t-str">&quot;mb-3 px-2 text-lg text-zinc-500 hover:text-[#dc0a2d]&quot;</span>;
+  boton.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;click&quot;</span>, <span class="t-kw">function</span> () {
+    pokedex = pokedex.<span class="t-fn">filter</span>(p =&gt; p.nombre !== pokemon.nombre);
+    <span class="t-fn">mostrarColeccion</span>();
+  });
+  <span class="t-kw">return</span> boton;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Crea un <code>&lt;button&gt;</code> con texto "✕ Quitar".</li><li><code>aria-label</code> le dice al lector de pantalla "Quitar a pikachu" (más claro que solo "Quitar").</li><li>Al hacer clic: <code>pokedex.filter(p =&gt; p.nombre !== pokemon.nombre)</code> crea un array nuevo SIN ese Pokémon.</li><li>Llama a <code>mostrarColeccion()</code> para redibujar con el filtro activo.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué <code>filter</code> y no <code>splice</code>?</p><p class="pp-a"><code>filter</code> crea un array nuevo sin tocar el original y se lee como una frase: "quédate con los que NO se llaman así". No necesito buscar la posición.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-render">
+      <header>
+        <p class="meta">app.js · líneas 69–76 · C09</p>
+        <h3>render: el patrón render</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">69
+70
+71
+72
+73
+74
+75
+76</pre><pre class="code"><code><span class="t-kw">function</span> <span class="t-fn">render</span>(lista) {
+  contenedor.innerHTML = <span class="t-str">&quot;&quot;</span>;                 <span class="t-com">// 1. limpia lo anterior</span>
+  lista.<span class="t-fn">forEach</span>(<span class="t-kw">function</span> (pokemon) {
+    <span class="t-kw">const</span> tarjeta = <span class="t-fn">crearTarjeta</span>(pokemon);   <span class="t-com">// 2. crea el nodo</span>
+    tarjeta.<span class="t-fn">appendChild</span>(<span class="t-fn">crearBotonQuitar</span>(pokemon));   <span class="t-com">// Logro 2 (solo en la rejilla)</span>
+    contenedor.<span class="t-fn">appendChild</span>(tarjeta);         <span class="t-com">// 3. lo inserta en el DOM</span>
+  });
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>1) <code>contenedor.innerHTML = ""</code> limpia lo anterior.</li><li>2) <code>forEach</code> recorre la lista recibida.</li><li>3) Crea la tarjeta y le pega el botón Quitar (solo en la rejilla).</li><li>4) <code>appendChild</code> la inserta en el DOM.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué recibe <code>lista</code> y no usa <code>pokedex</code> directo?</p><p class="pp-a">Para dibujar cualquier lista: la colección completa o solo los filtrados por tipo. La misma función sirve para todo.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-adaptar">
+      <header>
+        <p class="meta">app.js · líneas 78–88 · C10 + C11</p>
+        <h3>adaptarPokemon: el traductor</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88</pre><pre class="code"><code><span class="t-com">// Traduce la estructura de la API a la forma limpia que espera crearTarjeta</span>
+<span class="t-kw">function</span> <span class="t-fn">adaptarPokemon</span>(data) {
+  <span class="t-kw">return</span> {
+    nombre: data.name,
+    numero: data.id,   <span class="t-com">// nº de la Pokédex (para la cabecera &quot;Nº025&quot;)</span>
+    imagen: data.sprites?.front_default ?? <span class="t-str">&quot;https://via.placeholder.com/96?text=?&quot;</span>,
+    tipos:  data.types.<span class="t-fn">map</span>(t =&gt; t.type.name),   <span class="t-com">// [{type:{name:&quot;electric&quot;}}] → [&quot;electric&quot;]</span>
+    stats:  data.stats.<span class="t-fn">map</span>(s =&gt; ({ nombre: s.stat.name, valor: s.base_stat }))
+    <span class="t-com">// data.stats = [{ base_stat: 35, stat: { name: &quot;hp&quot; } }, ...]</span>
+  };
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Recibe el JSON gigante de la API (<code>data</code>) y devuelve un objeto pequeño y limpio.</li><li><code>data.name</code> → <code>nombre</code>; <code>data.id</code> → <code>numero</code>.</li><li><code>data.sprites?.front_default ?? respaldo</code> → <code>imagen</code> (seguro si falta).</li><li><code>data.types.map(t =&gt; t.type.name)</code> → <code>["fire", "flying"]</code>.</li><li><code>data.stats.map(...)</code> → <code>[{ nombre: "hp", valor: 78 }, …]</code>.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Qué es <code>t</code> en <code>t =&gt; t.type.name</code>?</p><p class="pp-a">Cada elemento del array <code>data.types</code>, que tiene la forma <code>{ slot: 1, type: { name: "fire", url: ... } }</code>.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-estado">
+      <header>
+        <p class="meta">app.js · líneas 90–94 · C10 + HU-B</p>
+        <h3>El estado de la app</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">90
+91
+92
+93
+94</pre><pre class="code"><code><span class="t-kw">let</span> pokedex = [];   <span class="t-com">// aquí guardamos la rejilla cargada</span>
+
+<span class="t-com">// ---------- HU-B (proyecto): filtrar la colección por tipo ----------</span>
+<span class="t-kw">let</span> tipoActivo = <span class="t-str">&quot;todos&quot;</span>;
+<span class="t-kw">const</span> filtros = document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;filtros&quot;</span>);</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>pokedex</code>: la colección (empieza vacía, se llena al cargar).</li><li><code>tipoActivo</code>: el filtro elegido; empieza en "todos".</li><li><code>filtros</code>: el contenedor de los botones de tipo.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué <code>pokedex</code> es <code>let</code>?</p><p class="pp-a">Porque se reasigna en varias partes: al cargar, al quitar. Si fuera <code>const</code>, JavaScript daría error al reasignarla.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-botonfiltro">
+      <header>
+        <p class="meta">app.js · líneas 96–109 · Proyecto</p>
+        <h3>crearBotonFiltro (HU-B)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109</pre><pre class="code"><code><span class="t-kw">function</span> <span class="t-fn">crearBotonFiltro</span>(tipo, cantidad) {
+  <span class="t-kw">const</span> activo = tipo === tipoActivo;
+  <span class="t-kw">const</span> color = tipo === <span class="t-str">&quot;todos&quot;</span> ? <span class="t-str">&quot;#52525b&quot;</span> : (coloresTipo[tipo] ?? <span class="t-str">&quot;#68A090&quot;</span>);
+  <span class="t-kw">const</span> boton = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;button&quot;</span>);
+  boton.textContent = <span class="t-str">`${tipo === &quot;todos&quot; ? &quot;Todos&quot; : (abreviaturas[tipo] ?? tipo)} ${cantidad}`</span>;
+  boton.<span class="t-fn">setAttribute</span>(<span class="t-str">&quot;aria-pressed&quot;</span>, <span class="t-fn">String</span>(activo));   <span class="t-com">// lectores de pantalla: cuál está activo</span>
+  boton.className = <span class="t-str">`tipo ${activo ? &quot;&quot; : &quot;opacity-60 hover:opacity-100&quot;}`</span>;
+  boton.style.<span class="t-fn">setProperty</span>(<span class="t-str">&quot;--color&quot;</span>, color);
+  boton.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;click&quot;</span>, <span class="t-kw">function</span> () {
+    tipoActivo = tipo;
+    <span class="t-fn">mostrarColeccion</span>();
+  });
+  <span class="t-kw">return</span> boton;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>activo</code> es <code>true</code> si este botón es el filtro elegido.</li><li>Escoge color: gris para "Todos", el del tipo para los demás.</li><li>Texto: "Todos 6" o "fire 2" (nombre + cantidad).</li><li><code>aria-pressed</code> dice al lector de pantalla si está presionado.</li><li><code>style.setProperty("--color", color)</code> pasa el color al CSS.</li><li>Al hacer clic cambia <code>tipoActivo</code> y redibuja.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Para qué <code>String(activo)</code>?</p><p class="pp-a">Los atributos HTML son texto. <code>setAttribute</code> necesita "true"/"false" como texto.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-renderfiltros">
+      <header>
+        <p class="meta">app.js · líneas 111–120 · Proyecto</p>
+        <h3>renderFiltros (HU-B)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">111
+112
+113
+114
+115
+116
+117
+118
+119
+120</pre><pre class="code"><code><span class="t-com">// Dibuja los botones con los tipos que hay HOY en la colección</span>
+<span class="t-kw">function</span> <span class="t-fn">renderFiltros</span>() {
+  <span class="t-kw">const</span> tipos = [...<span class="t-kw">new</span> <span class="t-fn">Set</span>(pokedex.<span class="t-fn">flatMap</span>(p =&gt; p.tipos))].<span class="t-fn">sort</span>();   <span class="t-com">// tipos únicos (Set) y ordenados</span>
+  filtros.innerHTML = <span class="t-str">&quot;&quot;</span>;
+  filtros.<span class="t-fn">appendChild</span>(<span class="t-fn">crearBotonFiltro</span>(<span class="t-str">&quot;todos&quot;</span>, pokedex.length));
+  tipos.<span class="t-fn">forEach</span>(<span class="t-kw">function</span> (tipo) {
+    <span class="t-kw">const</span> cantidad = pokedex.<span class="t-fn">filter</span>(p =&gt; p.tipos.<span class="t-fn">includes</span>(tipo)).length;
+    filtros.<span class="t-fn">appendChild</span>(<span class="t-fn">crearBotonFiltro</span>(tipo, cantidad));
+  });
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>pokedex.flatMap(p =&gt; p.tipos)</code> junta TODOS los tipos en un solo array: ["grass","poison","fire",…].</li><li><code>new Set(...)</code> elimina repetidos; <code>[...]</code> lo vuelve array; <code>.sort()</code> lo ordena.</li><li>Limpia los botones viejos y crea "Todos" + uno por tipo, contando cuántos tiene cada uno con <code>filter(...).length</code>.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué <code>flatMap</code> y no <code>map</code>?</p><p class="pp-a"><code>map</code> daría un array de arrays: [["grass","poison"],["fire"]]. <code>flatMap</code> lo aplana en uno solo.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-coleccion">
+      <header>
+        <p class="meta">app.js · líneas 122–134 · Proyecto</p>
+        <h3>mostrarColeccion (HU-B)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134</pre><pre class="code"><code><span class="t-com">// Muestra la colección aplicando el filtro activo (reusa render de C09 sin cambiarlo)</span>
+<span class="t-kw">function</span> <span class="t-fn">mostrarColeccion</span>() {
+  <span class="t-kw">const</span> hayTipo = pokedex.<span class="t-fn">some</span>(p =&gt; p.tipos.<span class="t-fn">includes</span>(tipoActivo));
+  <span class="t-kw">if</span> (tipoActivo !== <span class="t-str">&quot;todos&quot;</span> &amp;&amp; !hayTipo) {
+    tipoActivo = <span class="t-str">&quot;todos&quot;</span>;   <span class="t-com">// si quitaste el último de ese tipo, vuelve a &quot;Todos&quot;</span>
+  }
+  <span class="t-fn">renderFiltros</span>();
+
+  <span class="t-kw">const</span> lista = tipoActivo === <span class="t-str">&quot;todos&quot;</span>
+    ? pokedex
+    : pokedex.<span class="t-fn">filter</span>(p =&gt; p.tipos.<span class="t-fn">includes</span>(tipoActivo));
+  <span class="t-fn">render</span>(lista);
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Si el tipo activo ya no existe (quitaste el último), vuelve a "todos".</li><li>Redibuja los botones de filtro.</li><li>Arma la lista: todos, o solo los del tipo (operador ternario <code>? :</code>).</li><li>Llama a <code>render(lista)</code>: el render del C09 SIN cambios.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué reemplazaste <code>render(pokedex)</code> por esta función?</p><p class="pp-a">Para que el filtro se mantenga al capturar, quitar o cargar más. Todos esos lugares ahora llaman a <code>mostrarColeccion()</code>.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-error">
+      <header>
+        <p class="meta">app.js · líneas 136–149 · C11 + C12</p>
+        <h3>Referencias al DOM + mostrarError (Logro 1 C12)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149</pre><pre class="code"><code><span class="t-kw">const</span> buscador = document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;buscador&quot;</span>);
+<span class="t-kw">const</span> boton = document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;btn-buscar&quot;</span>);
+<span class="t-kw">const</span> mensaje = document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;mensaje&quot;</span>);
+<span class="t-kw">const</span> spinner = document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;spinner&quot;</span>);
+
+<span class="t-com">// Logro 1: muestra un error con un botón &quot;Reintentar&quot; que repite la última acción</span>
+<span class="t-kw">function</span> <span class="t-fn">mostrarError</span>(texto, reintentar) {
+  <span class="t-kw">const</span> boton = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;button&quot;</span>);
+  boton.textContent = <span class="t-str">&quot;Reintentar&quot;</span>;
+  boton.className = <span class="t-str">&quot;boton-ds ml-3 px-3 py-1 text-sm bg-[#fecb00] text-zinc-800 hover:bg-[#ffd83d]&quot;</span>;
+  boton.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;click&quot;</span>, reintentar);
+  mensaje.<span class="t-fn">replaceChildren</span>(texto, boton);   <span class="t-com">// texto + botón dentro de #mensaje</span>
+  mensaje.classList.<span class="t-fn">remove</span>(<span class="t-str">&quot;hidden&quot;</span>);
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Guarda en constantes los elementos del HTML que se usan seguido.</li><li><code>mostrarError(texto, reintentar)</code> crea el botón Reintentar y le asigna la función recibida.</li><li><code>mensaje.replaceChildren(texto, boton)</code> borra lo que había en #mensaje y pone el texto + el botón.</li><li>Quita <code>hidden</code> para mostrar el mensaje.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">Hay una <code>const boton</code> afuera y otra adentro de la función, ¿no chocan?</p><p class="pp-a">No. La de adentro existe solo dentro de la función (ámbito local) y "tapa" a la de afuera mientras dura la función. Se llama <em>shadowing</em>.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-obtener">
+      <header>
+        <p class="meta">app.js · líneas 151–165 · C11 + C12</p>
+        <h3>obtenerPokemon: el pedido a la API</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165</pre><pre class="code"><code><span class="t-kw">async</span> <span class="t-kw">function</span> <span class="t-fn">obtenerPokemon</span>(idONombre) {
+  <span class="t-kw">const</span> response = <span class="t-kw">await</span> <span class="t-fn">fetch</span>(<span class="t-str">`https://pokeapi.co/api/v2/pokemon/${idONombre}`</span>);
+
+  <span class="t-com">// Logro: &quot;no existe&quot; no es un fallo de la app → devolvemos null (resultado vacío)</span>
+  <span class="t-kw">if</span> (response.status === <span class="t-num">404</span>) {
+    <span class="t-kw">return</span> <span class="t-kw">null</span>;
+  }
+
+  <span class="t-com">// HU2: fetch NO falla por un 404 ni un 500, hay que revisarlo con response.ok</span>
+  <span class="t-kw">if</span> (!response.ok) {                                    <span class="t-com">// 500, 503, etc.</span>
+    <span class="t-kw">throw</span> <span class="t-kw">new</span> <span class="t-fn">Error</span>(<span class="t-str">`La PokeAPI respondió con un error (${response.status}). Intenta de nuevo.`</span>);
+  }
+
+  <span class="t-kw">return</span> response.<span class="t-fn">json</span>();
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>async</code>: devuelve una Promesa y permite usar <code>await</code>.</li><li><code>await fetch(...)</code>: espera la respuesta. Sirve con nombre ("pikachu") o número (25).</li><li>Si es 404 → <code>return null</code>: no existe, no es un error.</li><li>Si no es ok (500, 503…) → <code>throw new Error(...)</code>: salta al catch de quien la llamó.</li><li>Si todo bien → <code>response.json()</code>: los datos como objeto.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">Si no hay internet, ¿qué línea falla?</p><p class="pp-a">La del <code>await fetch(...)</code>: lanza un <code>TypeError</code> y nunca llega a revisar el status. Ese error lo atrapa el <code>catch</code> de quien llamó.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-cargar">
+      <header>
+        <p class="meta">app.js · líneas 167–183 · C11 + C12</p>
+        <h3>cargarPokedex: la carga inicial</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183</pre><pre class="code"><code><span class="t-com">// HU3: la carga inicial también puede fallar (sin red al abrir)</span>
+<span class="t-kw">async</span> <span class="t-kw">function</span> <span class="t-fn">cargarPokedex</span>() {
+  spinner.classList.<span class="t-fn">remove</span>(<span class="t-str">&quot;hidden&quot;</span>);
+  mensaje.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);
+  <span class="t-kw">try</span> {
+    <span class="t-kw">const</span> nombres = [<span class="t-str">&quot;bulbasaur&quot;</span>, <span class="t-str">&quot;charmander&quot;</span>, <span class="t-str">&quot;squirtle&quot;</span>, <span class="t-str">&quot;pikachu&quot;</span>, <span class="t-str">&quot;jigglypuff&quot;</span>, <span class="t-str">&quot;gengar&quot;</span>];
+    <span class="t-kw">const</span> datos = <span class="t-kw">await</span> Promise.<span class="t-fn">all</span>(nombres.<span class="t-fn">map</span>(obtenerPokemon));   <span class="t-com">// varios en paralelo, con await</span>
+    pokedex = datos.<span class="t-fn">map</span>(adaptarPokemon);
+    <span class="t-fn">mostrarColeccion</span>();
+  } <span class="t-kw">catch</span> (error) {
+    <span class="t-fn">mostrarError</span>(<span class="t-str">&quot;No se pudo cargar la Pokédex.&quot;</span>, cargarPokedex);
+  } <span class="t-kw">finally</span> {
+    spinner.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);   <span class="t-com">// corre SIEMPRE: con éxito o con error</span>
+  }
+}
+
+<span class="t-fn">cargarPokedex</span>();</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Muestra el spinner y oculta errores viejos.</li><li><code>nombres.map(obtenerPokemon)</code> crea 6 Promesas (6 pedidos a la vez).</li><li><code>await Promise.all(...)</code> espera las 6.</li><li>Adapta todo y dibuja con <code>mostrarColeccion()</code>.</li><li>Si algo falla → error + Reintentar (vuelve a llamar a esta misma función).</li><li><code>finally</code> oculta el spinner siempre.</li><li>La última línea, <code>cargarPokedex();</code>, la ejecuta al abrir la página.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q"><code>spinner</code> y <code>mensaje</code> se declaran en la línea 138–139 y esta función se llama en la 183. ¿Importa el orden?</p><p class="pp-a">Sí. Las <code>const</code> no se pueden usar antes de su línea ("zona muerta temporal"). Si las hubiera declarado después de la línea 183, la app fallaría al abrir.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-buscar">
+      <header>
+        <p class="meta">app.js · líneas 185–191 · C11 + C12</p>
+        <h3>buscarPokemon</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">185
+186
+187
+188
+189
+190
+191</pre><pre class="code"><code><span class="t-com">// HU2: buscar y traer un Pokémon de la API</span>
+<span class="t-com">// Logro 1: la API también acepta números (/pokemon/25), así que sirve el mismo código</span>
+<span class="t-kw">async</span> <span class="t-kw">function</span> <span class="t-fn">buscarPokemon</span>(nombre) {
+  <span class="t-kw">const</span> data = <span class="t-kw">await</span> <span class="t-fn">obtenerPokemon</span>(nombre.<span class="t-fn">toLowerCase</span>());   <span class="t-com">// reusa obtenerPokemon de HU1</span>
+  <span class="t-kw">if</span> (data === <span class="t-kw">null</span>) <span class="t-kw">return</span> <span class="t-kw">null</span>;                            <span class="t-com">// no existe: no hay nada que adaptar</span>
+  <span class="t-kw">return</span> <span class="t-fn">adaptarPokemon</span>(data);
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Pasa el texto a minúsculas (la API usa nombres en minúscula).</li><li>Reusa <code>obtenerPokemon</code>.</li><li>Si llegó <code>null</code> → devuelve <code>null</code> (no hay nada que adaptar).</li><li>Si no → devuelve el Pokémon adaptado.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué <code>toLowerCase()</code>?</p><p class="pp-a">Porque si alguien escribe "Charizard" con mayúscula, la API responde 404. En minúsculas sí lo encuentra.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-noencontrado">
+      <header>
+        <p class="meta">app.js · líneas 193–205 · Logro C12</p>
+        <h3>mostrarNoEncontrado: el aviso neutro</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205</pre><pre class="code"><code><span class="t-com">// Aviso neutro (no es un error): la búsqueda funcionó, pero no hay resultado</span>
+<span class="t-kw">function</span> <span class="t-fn">mostrarNoEncontrado</span>(nombre) {
+  <span class="t-kw">const</span> aviso = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;div&quot;</span>);
+  aviso.className = <span class="t-str">&quot;col-span-full caja-dialogo max-w-xl w-full mx-auto px-5 py-4 text-center&quot;</span>;
+  <span class="t-kw">const</span> titulo = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;p&quot;</span>);
+  titulo.className = <span class="t-str">&quot;pixel-titulo text-base font-bold&quot;</span>;
+  titulo.textContent = <span class="t-str">`🔍 No se encontró &quot;${nombre}&quot;`</span>;   <span class="t-com">// textContent: lo escrito no se interpreta como HTML</span>
+  <span class="t-kw">const</span> ayuda = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;p&quot;</span>);
+  ayuda.className = <span class="t-str">&quot;mt-1 text-zinc-600&quot;</span>;
+  ayuda.textContent = <span class="t-str">&quot;Revisa cómo se escribe o prueba con su número (ej. 25).&quot;</span>;
+  aviso.<span class="t-fn">append</span>(titulo, ayuda);
+  contenedor.<span class="t-fn">replaceChildren</span>(aviso);
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Crea una cajita con título y ayuda usando <code>createElement</code>.</li><li>Usa <code>textContent</code> porque el nombre lo escribió la persona: así no se ejecuta HTML.</li><li><code>col-span-full</code> hace que ocupe todo el ancho de la rejilla.</li><li><code>replaceChildren(aviso)</code> limpia la rejilla y pone solo el aviso.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué no usaste innerHTML aquí?</p><p class="pp-a">Si alguien escribe <code>&lt;img src=x onerror=alert(1)&gt;</code>, con <code>innerHTML</code> ese código se ejecutaría. Con <code>textContent</code> se ve como texto.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-capturar">
+      <header>
+        <p class="meta">app.js · líneas 207–214 · C11</p>
+        <h3>capturar (HU3 del C11)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">207
+208
+209
+210
+211
+212
+213
+214</pre><pre class="code"><code><span class="t-com">// HU3: suma el Pokémon a la colección, sin duplicar</span>
+<span class="t-kw">function</span> <span class="t-fn">capturar</span>(pokemon) {
+  <span class="t-kw">if</span> (!pokedex.<span class="t-fn">some</span>(p =&gt; p.nombre === pokemon.nombre)) {
+    pokedex.<span class="t-fn">push</span>(pokemon);   <span class="t-com">// hace crecer tu colección</span>
+  }
+  <span class="t-fn">mostrarColeccion</span>();           <span class="t-com">// vuelve la colección completa, ya con el nuevo</span>
+  buscador.value = <span class="t-str">&quot;&quot;</span>;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Si NO hay ninguno con ese nombre (<code>!pokedex.some(...)</code>), lo agrega con <code>push</code>.</li><li>Redibuja la colección completa (con el filtro activo).</li><li>Limpia el buscador.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Qué hace el <code>!</code>?</p><p class="pp-a">Niega: <code>some</code> responde "¿hay alguno?" y el <code>!</code> lo convierte en "¿NO hay ninguno?".</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-statsconf">
+      <header>
+        <p class="meta">app.js · líneas 216–232 · Proyecto</p>
+        <h3>Configuración de las barras (HU-A)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232</pre><pre class="code"><code><span class="t-com">// ---------- HU-A (proyecto): estadísticas con barras ----------</span>
+<span class="t-kw">const</span> nombresStats = {
+  <span class="t-str">&quot;hp&quot;</span>: <span class="t-str">&quot;PS&quot;</span>,
+  <span class="t-str">&quot;attack&quot;</span>: <span class="t-str">&quot;Ataque&quot;</span>,
+  <span class="t-str">&quot;defense&quot;</span>: <span class="t-str">&quot;Defensa&quot;</span>,
+  <span class="t-str">&quot;special-attack&quot;</span>: <span class="t-str">&quot;At. especial&quot;</span>,
+  <span class="t-str">&quot;special-defense&quot;</span>: <span class="t-str">&quot;Def. especial&quot;</span>,
+  <span class="t-str">&quot;speed&quot;</span>: <span class="t-str">&quot;Velocidad&quot;</span>
+};
+<span class="t-kw">const</span> STAT_MAXIMA = <span class="t-num">255</span>;   <span class="t-com">// el valor base más alto que existe en los juegos</span>
+
+<span class="t-com">// Color según qué tan alta es la estadística</span>
+<span class="t-kw">function</span> <span class="t-fn">colorBarra</span>(valor) {
+  <span class="t-kw">if</span> (valor &lt; <span class="t-num">50</span>) <span class="t-kw">return</span> <span class="t-str">&quot;bg-[#f05030]&quot;</span>;
+  <span class="t-kw">if</span> (valor &lt; <span class="t-num">90</span>) <span class="t-kw">return</span> <span class="t-str">&quot;bg-[#f8c030]&quot;</span>;
+  <span class="t-kw">return</span> <span class="t-str">&quot;bg-[#48b048]&quot;</span>;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>nombresStats</code> traduce los nombres de la API al español (hp → PS).</li><li><code>STAT_MAXIMA = 255</code>: el valor más alto posible; sirve para calcular el ancho de la barra.</li><li><code>colorBarra(valor)</code>: menos de 50 rojo, de 50 a 89 amarillo, 90 o más verde.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué 255?</p><p class="pp-a">Es el valor base máximo que existe en los juegos (lo tiene Blissey en PS). Así ninguna barra pasa del 100 %.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-barras">
+      <header>
+        <p class="meta">app.js · líneas 234–256 · Proyecto</p>
+        <h3>crearBarrasStats (HU-A)</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256</pre><pre class="code"><code><span class="t-kw">function</span> <span class="t-fn">crearBarrasStats</span>(stats) {
+  <span class="t-kw">const</span> contenedorStats = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;div&quot;</span>);
+  contenedorStats.className = <span class="t-str">&quot;caja-dialogo mx-3 mt-1 mb-4 px-3 py-2 text-left text-xl leading-tight space-y-1&quot;</span>;
+
+  <span class="t-kw">const</span> filas = stats.<span class="t-fn">map</span>(<span class="t-kw">function</span> ({ nombre, valor }) {   <span class="t-com">// destructuring en el parámetro</span>
+    <span class="t-kw">const</span> ancho = Math.<span class="t-fn">round</span>((valor / STAT_MAXIMA) * <span class="t-num">100</span>);   <span class="t-com">// % de la barra</span>
+    <span class="t-kw">const</span> etiqueta = nombresStats[nombre] ?? nombre;
+    <span class="t-kw">return</span> <span class="t-str">`
+      &lt;div&gt;
+        &lt;div class=&quot;flex justify-between uppercase tracking-wide&quot;&gt;&lt;span&gt;${etiqueta}&lt;/span&gt;&lt;span class=&quot;font-bold&quot;&gt;${valor}&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;h-2.5 bg-zinc-200 border-2 border-zinc-700 rounded-sm overflow-hidden&quot; aria-hidden=&quot;true&quot;&gt;
+          &lt;div class=&quot;h-full ${colorBarra(valor)}&quot; style=&quot;width: ${ancho}%&quot;&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;`</span>;
+  });
+
+  <span class="t-kw">const</span> total = stats.<span class="t-fn">reduce</span>((suma, s) =&gt; suma + s.valor, <span class="t-num">0</span>);
+  contenedorStats.innerHTML = filas.<span class="t-fn">join</span>(<span class="t-str">&quot;&quot;</span>) + <span class="t-str">`
+    &lt;div class=&quot;flex justify-between border-t-2 border-dashed border-zinc-300 pt-1.5 font-bold uppercase tracking-wide&quot;&gt;
+      &lt;span&gt;Total&lt;/span&gt;&lt;span&gt;${total}&lt;/span&gt;
+    &lt;/div&gt;`</span>;
+  <span class="t-kw">return</span> contenedorStats;
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Destructuring en el parámetro: <code>function ({ nombre, valor })</code> saca las dos propiedades de cada stat.</li><li>Regla de tres: <code>ancho = valor / 255 * 100</code>. Un 78 da 31 %.</li><li><code>aria-hidden="true"</code> en la barra: es decorativa, el número ya está escrito.</li><li><code>reduce</code> suma todos los valores para el Total.</li><li><code>filas.join("")</code> une los textos y lo pone todo con <code>innerHTML</code>.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Cómo se calcula el ancho de la barra?</p><p class="pp-a">Con una regla de tres: valor dividido entre 255, por 100, y redondeado con <code>Math.round</code>. Se aplica con <code>style="width: 31%"</code>.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-resultado">
+      <header>
+        <p class="meta">app.js · líneas 258–273 · C11 + HU-A</p>
+        <h3>mostrarResultado: la tarjeta del buscado</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273</pre><pre class="code"><code><span class="t-com">// muestra la tarjeta del Pokémon encontrado</span>
+<span class="t-kw">function</span> <span class="t-fn">mostrarResultado</span>(pokemon) {
+  <span class="t-kw">const</span> tarjeta = <span class="t-fn">crearTarjeta</span>(pokemon);            <span class="t-com">// la tarjeta de C09 (un nodo)</span>
+
+  <span class="t-com">// HU4 (C11) + HU-A del proyecto: estadísticas con barras (solo en el resultado de búsqueda)</span>
+  tarjeta.<span class="t-fn">appendChild</span>(<span class="t-fn">crearBarrasStats</span>(pokemon.stats));
+
+  <span class="t-kw">const</span> boton = document.<span class="t-fn">createElement</span>(<span class="t-str">&quot;button&quot;</span>);
+  boton.textContent = <span class="t-str">&quot;⚡ Capturar&quot;</span>;
+  boton.className = <span class="t-str">&quot;boton-ds mb-4 w-[calc(100%-1.5rem)] py-2 bg-[#fecb00] text-zinc-800 hover:bg-[#ffd83d]&quot;</span>;
+  boton.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;click&quot;</span>, () =&gt; <span class="t-fn">capturar</span>(pokemon));
+  tarjeta.<span class="t-fn">appendChild</span>(boton);                       <span class="t-com">// el botón SOLO en el resultado</span>
+
+  contenedor.innerHTML = <span class="t-str">&quot;&quot;</span>;
+  contenedor.<span class="t-fn">appendChild</span>(tarjeta);
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Reusa <code>crearTarjeta</code> (la misma de la rejilla).</li><li>Le agrega las barras de estadísticas.</li><li>Le agrega el botón Capturar con <code>() =&gt; capturar(pokemon)</code>.</li><li>Limpia la rejilla y muestra solo esta tarjeta.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué <code>() =&gt; capturar(pokemon)</code> y no <code>capturar(pokemon)</code>?</p><p class="pp-a">Sin la flecha, <code>capturar</code> se ejecutaría en ese momento. Con la flecha, le paso una función que se ejecuta recién al hacer clic.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-busqueda">
+      <header>
+        <p class="meta">app.js · líneas 275–298 · C12</p>
+        <h3>mostrarBusqueda: el corazón del manejo de errores</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298</pre><pre class="code"><code><span class="t-com">// HU1: si la búsqueda falla, se muestra un mensaje y la app sigue viva</span>
+<span class="t-kw">async</span> <span class="t-kw">function</span> <span class="t-fn">mostrarBusqueda</span>(nombre) {
+  spinner.classList.<span class="t-fn">remove</span>(<span class="t-str">&quot;hidden&quot;</span>);   <span class="t-com">// ⏳ muestra carga</span>
+  mensaje.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);      <span class="t-com">// limpia errores anteriores</span>
+
+  <span class="t-kw">try</span> {
+    <span class="t-kw">const</span> pokemon = <span class="t-kw">await</span> <span class="t-fn">buscarPokemon</span>(nombre);
+    <span class="t-kw">if</span> (pokemon === <span class="t-kw">null</span>) {
+      <span class="t-fn">mostrarNoEncontrado</span>(nombre);   <span class="t-com">// &quot;no hay nada&quot; → aviso neutro en #resultado</span>
+    } <span class="t-kw">else</span> {
+      <span class="t-fn">mostrarResultado</span>(pokemon);     <span class="t-com">// muestra la tarjeta con el botón Capturar (de C11)</span>
+    }
+  } <span class="t-kw">catch</span> (error) {
+    <span class="t-com">// &quot;algo se rompió&quot; → mensaje de error en rojo.</span>
+    <span class="t-com">// Sin red, fetch lanza un TypeError en todos los navegadores (el texto cambia: Chrome</span>
+    <span class="t-com">// dice &quot;Failed to fetch&quot;, Safari &quot;Load failed&quot;), así que se revisa el TIPO de error.</span>
+    <span class="t-kw">const</span> texto = error <span class="t-kw">instanceof</span> TypeError
+      ? <span class="t-str">&quot;Algo salió mal. Revisa tu conexión.&quot;</span>
+      : error.message;
+    <span class="t-fn">mostrarError</span>(texto, () =&gt; <span class="t-fn">mostrarBusqueda</span>(nombre));   <span class="t-com">// repite la misma búsqueda</span>
+  } <span class="t-kw">finally</span> {
+    spinner.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);      <span class="t-com">// ✅ oculta carga SIEMPRE</span>
+  }
+}</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Muestra el spinner y oculta errores anteriores.</li><li><code>try</code>: busca. Si es <code>null</code> → aviso neutro; si no → tarjeta.</li><li><code>catch</code>: si es <code>TypeError</code> (sin red) → "Revisa tu conexión"; si no → el mensaje del error. Muestra Reintentar con la MISMA búsqueda.</li><li><code>finally</code>: oculta el spinner siempre.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Qué pasa si busco "pikachuu"?</p><p class="pp-a"><code>obtenerPokemon</code> recibe 404 → devuelve <code>null</code> → <code>buscarPokemon</code> devuelve <code>null</code> → aquí entra al <code>if</code> y muestra el aviso neutro. No entra al <code>catch</code> porque no es un error.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-eventos">
+      <header>
+        <p class="meta">app.js · líneas 300–307 · C11</p>
+        <h3>Los eventos del buscador</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">300
+301
+302
+303
+304
+305
+306
+307</pre><pre class="code"><code>boton.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;click&quot;</span>, <span class="t-kw">function</span> () {
+  <span class="t-kw">const</span> nombre = buscador.value.<span class="t-fn">trim</span>();
+  <span class="t-kw">if</span> (nombre !== <span class="t-str">&quot;&quot;</span>) <span class="t-fn">mostrarBusqueda</span>(nombre);
+});
+
+<span class="t-com">// Buscar también con Enter</span>
+buscador.<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;keydown&quot;</span>, <span class="t-kw">function</span> (event) {
+  <span class="t-kw">if</span> (event.key === <span class="t-str">&quot;Enter&quot;</span>) boton.<span class="t-fn">click</span>();</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li>Clic en Buscar: toma el texto, le quita espacios con <code>trim()</code> y, si no está vacío, busca.</li><li>Tecla Enter en el input: simula un clic en Buscar para no repetir la lógica.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Para qué el <code>trim()</code>?</p><p class="pp-a">Para ignorar espacios. Si alguien escribe solo espacios, <code>trim()</code> deja <code>""</code> y no se hace una búsqueda vacía.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="bloque" id="cod-mas">
+      <header>
+        <p class="meta">app.js · líneas 310–344 · C11 + C12</p>
+        <h3>cargarMas: la paginación</h3>
+      </header>
+      <div class="bloque-grid">
+        <div class="bloque-codigo"><div class="code-wrap"><pre class="gutter" aria-hidden="true">310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344</pre><pre class="code"><code><span class="t-com">// HU5: paginación con parámetros de consulta</span>
+<span class="t-kw">let</span> offset = <span class="t-num">0</span>;   <span class="t-com">// desde qué Pokémon empezamos</span>
+
+<span class="t-kw">async</span> <span class="t-kw">function</span> <span class="t-fn">cargarMas</span>() {
+  spinner.classList.<span class="t-fn">remove</span>(<span class="t-str">&quot;hidden&quot;</span>);
+  mensaje.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);
+  <span class="t-kw">try</span> {
+    <span class="t-com">// ?limit (cuántos) y ?offset (desde dónde) = parámetros de consulta</span>
+    <span class="t-kw">const</span> respuesta = <span class="t-kw">await</span> <span class="t-fn">fetch</span>(<span class="t-str">`https://pokeapi.co/api/v2/pokemon?limit=12&amp;offset=${offset}`</span>);
+    <span class="t-kw">if</span> (!respuesta.ok) {
+      <span class="t-kw">throw</span> <span class="t-kw">new</span> <span class="t-fn">Error</span>(<span class="t-str">&quot;No se pudieron cargar más Pokémon.&quot;</span>);
+    }
+    <span class="t-kw">const</span> lista = <span class="t-kw">await</span> respuesta.<span class="t-fn">json</span>();   <span class="t-com">// { results: [{ name, url }, ...] }</span>
+
+    <span class="t-com">// cada item trae solo name + url → pide el detalle de cada uno en paralelo</span>
+    <span class="t-kw">const</span> datos = <span class="t-kw">await</span> Promise.<span class="t-fn">all</span>(
+      lista.results.<span class="t-fn">map</span>(item =&gt; <span class="t-fn">fetch</span>(item.url).<span class="t-fn">then</span>(r =&gt; r.<span class="t-fn">json</span>()))
+    );
+
+    datos.<span class="t-fn">map</span>(adaptarPokemon).<span class="t-fn">forEach</span>(<span class="t-kw">function</span> (pokemon) {
+      <span class="t-kw">if</span> (!pokedex.<span class="t-fn">some</span>(p =&gt; p.nombre === pokemon.nombre)) {
+        pokedex.<span class="t-fn">push</span>(pokemon);   <span class="t-com">// sin duplicar</span>
+      }
+    });
+
+    offset += <span class="t-num">12</span>;     <span class="t-com">// la próxima vez, la siguiente página (solo si todo salió bien)</span>
+    <span class="t-fn">mostrarColeccion</span>();
+  } <span class="t-kw">catch</span> (error) {
+    <span class="t-fn">mostrarError</span>(<span class="t-str">&quot;No se pudieron cargar más Pokémon. Revisa tu conexión.&quot;</span>, cargarMas);
+  } <span class="t-kw">finally</span> {
+    spinner.classList.<span class="t-fn">add</span>(<span class="t-str">&quot;hidden&quot;</span>);
+  }
+}
+
+document.<span class="t-fn">getElementById</span>(<span class="t-str">&quot;cargar-mas&quot;</span>).<span class="t-fn">addEventListener</span>(<span class="t-str">&quot;click&quot;</span>, cargarMas);</code></pre></div></div>
+        <div class="bloque-explica">
+          <div><h4>En cristiano</h4>
+          <ol><li><code>offset</code> empieza en 0 y sube de 12 en 12.</li><li>Pide la lista con <code>?limit=12&amp;offset=...</code>; solo trae nombre + url.</li><li>Pide el detalle de los 12 a la vez con <code>Promise.all</code>.</li><li>Agrega solo los que no estaban (<code>some</code>).</li><li>Sube el <code>offset</code> SOLO si todo salió bien, así Reintentar pide la misma página.</li><li><code>try/catch/finally</code> igual que en las búsquedas.</li></ol></div>
+          <div class="pregunta-profe"><p class="pp-label">Si te preguntan</p><p class="pp-q">¿Por qué el <code>offset += 12</code> va dentro del try y al final?</p><p class="pp-a">Si la carga falla, no quiero saltarme esa página. Al reintentar, el offset sigue igual y se pide la misma.</p></div>
+        </div>
+      </div>
+    </article>
+</section>
+
+<!-- ================= 6. PREGUNTAS ================= -->
+<section id="preguntas" data-seccion="preguntas">
+  <div class="sec-head"><div><span class="kicker">Paso 7</span><h2>Preguntas del profe</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">30 preguntas probables. Intenta responder en voz alta ANTES de abrir la respuesta.</p>
+  <div class="chips" role="group" aria-label="Filtrar preguntas por tema" id="filtro-cats">
+    <button type="button" class="chip" data-cat="todas" aria-pressed="true">Todas</button>
+    <button type="button" class="chip" data-cat="Async" aria-pressed="false">Async</button><button type="button" class="chip" data-cat="Errores" aria-pressed="false">Errores</button><button type="button" class="chip" data-cat="Render" aria-pressed="false">Render</button><button type="button" class="chip" data-cat="JS" aria-pressed="false">JS</button><button type="button" class="chip" data-cat="API" aria-pressed="false">API</button><button type="button" class="chip" data-cat="HU" aria-pressed="false">HU</button><button type="button" class="chip" data-cat="Git" aria-pressed="false">Git</button><button type="button" class="chip" data-cat="Trampa" aria-pressed="false">Trampa</button><button type="button" class="chip" data-cat="IA" aria-pressed="false">IA</button>
+  </div>
+  <div class="acciones">
+    <button type="button" class="btn" id="mezclar">Mezclar</button>
+    <button type="button" class="btn" id="abrir-todas">Abrir todas</button>
+    <button type="button" class="btn" id="cerrar-todas">Cerrar todas</button>
+  </div>
+  <div class="flashes" id="lista-preguntas"><details class="flash" data-cat="Async"><summary><span class="cat">Async</span><span class="q">¿Qué es la asincronía y por qué importa en tu app?</span></summary><p>Pedir datos por internet tarda. JavaScript no se congela esperando: sigue trabajando y reacciona cuando llegan. Por eso la página no se traba mientras carga la Pokédex.</p></details><details class="flash" data-cat="Async"><summary><span class="cat">Async</span><span class="q">¿Qué devuelve <code>fetch</code>?</span></summary><p>Una Promesa: un "ticket" por la respuesta que llegará después. No los datos directamente.</p></details><details class="flash" data-cat="Async"><summary><span class="cat">Async</span><span class="q">¿Cuál es la diferencia entre <code>.then</code> y <code>async/await</code>?</span></summary><p>Hacen lo mismo. <code>async/await</code> es azúcar sintáctico: se lee de arriba a abajo como código normal. En el Lab 11 reescribí la carga del Lab 10 con <code>await</code> y el resultado fue idéntico.</p></details><details class="flash" data-cat="Async"><summary><span class="cat">Async</span><span class="q">¿Qué pasa si olvido el <code>await</code> antes de <code>fetch</code>?</span></summary><p><code>response</code> sería una Promesa y no la respuesta. <code>response.status</code> daría <code>undefined</code> y todo lo que sigue fallaría.</p></details><details class="flash" data-cat="Async"><summary><span class="cat">Async</span><span class="q">¿Por qué usas <code>Promise.all</code>?</span></summary><p>Para pedir los 6 Pokémon a la vez. En paralelo tarda lo que tarde el más lento; uno por uno tardaría la suma de todos.</p></details><details class="flash" data-cat="Async"><summary><span class="cat">Async</span><span class="q">Si uno de los 6 pedidos de <code>Promise.all</code> falla, ¿qué pasa?</span></summary><p><code>Promise.all</code> se rechaza completo. Entra al <code>catch</code> de <code>cargarPokedex</code> y aparece "No se pudo cargar la Pokédex." con Reintentar.</p></details><details class="flash" data-cat="Errores"><summary><span class="cat">Errores</span><span class="q">¿Por qué validas <code>response.ok</code>?</span></summary><p>Porque <code>fetch</code> solo falla si no hay red. Un 404 o un 500 llegan como respuestas normales. Si no los reviso, intentaría leer datos que no existen y la app fallaría de forma confusa.</p></details><details class="flash" data-cat="Errores"><summary><span class="cat">Errores</span><span class="q">¿Por qué ocultas el spinner en <code>finally</code>?</span></summary><p>Porque <code>finally</code> corre siempre, con éxito o con error. Si lo pusiera al final del <code>try</code>, un error saltaría directo al <code>catch</code> y el spinner se quedaría girando.</p></details><details class="flash" data-cat="Errores"><summary><span class="cat">Errores</span><span class="q">¿Qué diferencia hay entre devolver <code>null</code> y lanzar un error?</span></summary><p><code>null</code> significa "funcionó pero no hay resultado" (404). <code>throw</code> significa "algo se rompió" (500, sin red). Así muestro un aviso neutro o un error rojo según el caso.</p></details><details class="flash" data-cat="Errores"><summary><span class="cat">Errores</span><span class="q">¿Cómo sabes que el error es por falta de internet?</span></summary><p>Cuando no hay red, <code>fetch</code> lanza un <code>TypeError</code> en todos los navegadores. Lo reviso con <code>error instanceof TypeError</code> y no por el texto, porque el texto cambia (Chrome dice "Failed to fetch", Safari "Load failed").</p></details><details class="flash" data-cat="Errores"><summary><span class="cat">Errores</span><span class="q">¿Qué hace <code>throw new Error("...")</code>?</span></summary><p>Crea un error con mi mensaje y corta el <code>try</code>: salta directo al <code>catch</code>, donde leo el texto con <code>error.message</code>.</p></details><details class="flash" data-cat="Errores"><summary><span class="cat">Errores</span><span class="q">¿Cómo funciona el botón Reintentar?</span></summary><p><code>mostrarError</code> recibe una función como segundo argumento (un callback) y la asigna al clic del botón. Así un solo botón repite la búsqueda, la carga inicial o "Cargar más".</p></details><details class="flash" data-cat="Render"><summary><span class="cat">Render</span><span class="q">¿Qué es el patrón render?</span></summary><p>Limpiar el contenedor, recorrer los datos, crear un nodo por cada dato e insertarlo. La pantalla es un reflejo de los datos: si cambian los datos, vuelvo a llamar a render.</p></details><details class="flash" data-cat="Render"><summary><span class="cat">Render</span><span class="q">¿Por qué tienes una función adaptadora?</span></summary><p>La API usa su estructura (name, sprites.front_default, types[].type.name) y mi app usa la suya (nombre, imagen, tipos). El adaptador traduce en un solo lugar, por eso crearTarjeta y render no cambiaron desde el Lab 09.</p></details><details class="flash" data-cat="Render"><summary><span class="cat">Render</span><span class="q">¿Diferencia entre <code>innerHTML</code> y <code>textContent</code>?</span></summary><p><code>innerHTML</code> interpreta HTML; <code>textContent</code> pone texto plano. Lo que escribe la persona lo muestro con <code>textContent</code> para que no se ejecute código (XSS).</p></details><details class="flash" data-cat="Render"><summary><span class="cat">Render</span><span class="q">¿Por qué <code>crearTarjeta</code> devuelve el nodo en vez de insertarlo?</span></summary><p>Para reusarla: la rejilla le agrega Quitar y el resultado de búsqueda le agrega las barras y Capturar.</p></details><details class="flash" data-cat="JS"><summary><span class="cat">JS</span><span class="q">¿Qué es el destructuring?</span></summary><p>Sacar propiedades de un objeto (o elementos de un array) a variables en una línea: <code>const { nombre, imagen } = pokemon</code>.</p></details><details class="flash" data-cat="JS"><summary><span class="cat">JS</span><span class="q">¿Qué hacen <code>?.</code> y <code>??</code>?</span></summary><p><code>?.</code> entra a una propiedad solo si existe (si no, da undefined sin romper). <code>??</code> da un valor de respaldo si lo de la izquierda es null o undefined.</p></details><details class="flash" data-cat="JS"><summary><span class="cat">JS</span><span class="q">¿Por qué <code>let pokedex</code> y no <code>const</code>?</span></summary><p>Porque la reasigno: al cargar (<code>pokedex = datos.map(...)</code>) y al quitar (<code>pokedex = pokedex.filter(...)</code>).</p></details><details class="flash" data-cat="JS"><summary><span class="cat">JS</span><span class="q">¿Cómo evitas duplicados al capturar?</span></summary><p>Con <code>pokedex.some(p =&gt; p.nombre === pokemon.nombre)</code>: si ya hay uno con ese nombre, no lo agrego.</p></details><details class="flash" data-cat="JS"><summary><span class="cat">JS</span><span class="q">¿Qué hace <code>[...new Set(pokedex.flatMap(p =&gt; p.tipos))]</code>?</span></summary><p><code>flatMap</code> junta todos los tipos en un array, <code>Set</code> quita repetidos y el spread lo vuelve a convertir en array.</p></details><details class="flash" data-cat="API"><summary><span class="cat">API</span><span class="q">¿Qué diferencia hay entre parámetro de ruta y de consulta?</span></summary><p>Ruta: qué recurso (<code>/pokemon/pikachu</code>). Consulta: cómo lo quiero (<code>?limit=12&amp;offset=24</code>).</p></details><details class="flash" data-cat="API"><summary><span class="cat">API</span><span class="q">¿Cómo funciona "Cargar más"?</span></summary><p>Pide <code>?limit=12&amp;offset=N</code>, recibe 12 nombres con su URL, pide el detalle de los 12 en paralelo, agrega los que no tenía y sube el offset en 12 para la próxima página.</p></details><details class="flash" data-cat="API"><summary><span class="cat">API</span><span class="q">¿Por qué puedes buscar por número?</span></summary><p>Porque la API acepta <code>/pokemon/25</code> igual que <code>/pokemon/pikachu</code>. El mismo código sirve para los dos.</p></details><details class="flash" data-cat="HU"><summary><span class="cat">HU</span><span class="q">Explícame la HU-A.</span></summary><p>Al buscar un Pokémon, sus 6 estadísticas se ven como barras de colores en español con su total. El ancho es una regla de tres sobre 255 y el color depende del valor: rojo bajo 50, amarillo hasta 89, verde desde 90.</p></details><details class="flash" data-cat="HU"><summary><span class="cat">HU</span><span class="q">Explícame la HU-B.</span></summary><p>Botones de tipo sobre la rejilla, con la cantidad de cada uno. Al pulsar uno se ve solo ese tipo. El filtro se mantiene al capturar, cargar más o quitar, porque todo pasa por <code>mostrarColeccion()</code>.</p></details><details class="flash" data-cat="Git"><summary><span class="cat">Git</span><span class="q">¿Por qué trabajaste con ramas y Pull Requests?</span></summary><p>Para no romper <code>main</code>, que es lo publicado. Cada lab y cada historia tuvo su rama, la revisé en un PR y la mezclé cuando funcionaba.</p></details><details class="flash" data-cat="Trampa"><summary><span class="cat">Trampa</span><span class="q">Hay varias <code>const boton</code> en el archivo, ¿no es un error?</span></summary><p>No. Las de adentro de las funciones solo existen dentro de su función (ámbito local) y tapan a la de afuera mientras dura la función (shadowing).</p></details><details class="flash" data-cat="Trampa"><summary><span class="cat">Trampa</span><span class="q">¿Importa en qué línea declaras <code>spinner</code>?</span></summary><p>Sí. <code>cargarPokedex()</code> se llama en la línea 183 y usa <code>spinner</code>. Si la <code>const</code> estuviera declarada después, daría error porque una <code>const</code> no existe antes de su línea.</p></details><details class="flash" data-cat="IA"><summary><span class="cat">IA</span><span class="q">¿Usaste IA?</span></summary><p>Sí, usé Claude como asistente, como permite el proyecto. Revisé cada cambio en los Pull Requests y puedo explicar el código: por ejemplo, por qué valido response.ok y por qué el spinner va en finally.</p></details></div>
+</section>
+
+<!-- ================= 7. QUIZ ================= -->
+<section id="quiz" data-seccion="quiz">
+  <div class="sec-head"><div><span class="kicker">Paso 8</span><h2>Quiz relámpago</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">12 preguntas. Cuando saques 12/12 dos veces seguidas, estás para la demo.</p>
+  <form id="form-quiz" class="quiz"></form>
+  <div class="acciones" style="margin-top:14px; align-items:center">
+    <button type="submit" form="form-quiz" class="btn primario">Revisar respuestas</button>
+    <button type="button" class="btn" id="reiniciar-quiz">Volver a intentar</button>
+    <span class="puntaje" id="puntaje" role="status"></span>
+  </div>
+</section>
+
+<!-- ================= 8. PLAN B ================= -->
+<section id="planb" data-seccion="planb">
+  <div class="sec-head"><div><span class="kicker">Paso 9</span><h2>Plan B: si algo sale raro en vivo</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Si pasa esto…</th><th>Por qué</th><th>Qué haces o dices</th></tr></thead>
+    <tbody>
+      <tr><td>El spinner tarda mucho</td><td>Internet lento en el aula</td><td>"Justo por esto existe el spinner: la red no es inmediata y la app no se congela mientras espera."</td></tr>
+      <tr><td>Sale "No se pudo cargar la Pokédex"</td><td>Sin red o la PokeAPI caída</td><td>Pulsa <strong>Reintentar</strong>. "Esto es el catch de cargarPokedex: la app no se rompe y deja reintentar."</td></tr>
+      <tr><td>Ves la versión vieja del sitio</td><td>Caché del navegador</td><td><code>Cmd + Shift + R</code> para recargar sin caché.</td></tr>
+      <tr><td>Escribes "Charizard" con mayúscula</td><td>No pasa nada</td><td>Funciona igual: <code>buscarPokemon</code> lo pasa a minúsculas.</td></tr>
+      <tr><td>Buscas un número (ej. <code>133</code>)</td><td>La API acepta números</td><td>"También puedo buscar por número: la misma URL acepta /pokemon/133."</td></tr>
+      <tr><td>Olvidas qué decir</td><td>Nervios</td><td>Vuelve al flujo: "pido los datos → espero con await → si falla, catch → siempre oculto el spinner en finally".</td></tr>
+      <tr><td>Te preguntan algo que no sabes</td><td>Pasa</td><td>"No lo tengo claro, pero lo buscaría en el código así: …" y abre el archivo. Es mejor que inventar.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================= 9. CHULETA ================= -->
+<section id="chuleta" data-seccion="chuleta">
+  <div class="sec-head"><div><span class="kicker">Paso 10</span><h2>La chuleta de 1 minuto</h2></div><button type="button" class="domino" aria-pressed="false">Lo domino</button></div>
+  <p class="lead">Léela justo antes de presentar.</p>
+  <ol class="chuleta">
+    <li><strong>fetch devuelve una Promesa</strong>, no los datos. Con <code>await</code> espero el valor.</li>
+    <li><strong>async/await = .then</strong> escrito más legible. <code>await</code> solo va dentro de <code>async</code>.</li>
+    <li><strong>Promise.all</strong> = 6 pedidos a la vez. Si uno falla, falla todo → catch.</li>
+    <li><strong>fetch solo falla sin red</strong>. El 404 y el 500 los reviso con <code>response.status</code> y <code>response.ok</code>.</li>
+    <li><strong>404 → null → aviso neutro</strong>. Error real → <code>throw</code> → catch → mensaje rojo + Reintentar.</li>
+    <li><strong>finally</strong> corre siempre → ahí oculto el spinner.</li>
+    <li><strong>adaptarPokemon</strong> traduce el JSON de la API a { nombre, numero, imagen, tipos, stats }.</li>
+    <li><strong>render</strong> = limpiar → recorrer → crear → insertar. La pantalla refleja los datos.</li>
+    <li><strong>?.</strong> entra solo si existe. <strong>??</strong> da un respaldo si es null o undefined.</li>
+    <li><strong>textContent</strong> para lo que escribe la persona (seguridad). <strong>innerHTML</strong> para las tarjetas.</li>
+    <li><strong>HU-A</strong>: barras = valor / 255 × 100, colores por nivel, total con <code>reduce</code>.</li>
+    <li><strong>HU-B</strong>: tipos únicos con <code>new Set(flatMap)</code>, filtro en <code>tipoActivo</code>, todo pasa por <code>mostrarColeccion()</code>.</li>
+  </ol>
+  <div class="nota" style="margin-top:16px">
+    <p><strong>Si te preguntan por la IA:</strong> el proyecto la permite si puedes explicar el código. Di la verdad: "Usé Claude como asistente; revisé cada cambio en los Pull Requests y puedo explicar cómo funciona". Luego demuéstralo con una de las decisiones técnicas de arriba.</p>
+  </div>
+  <h3 style="margin-top:22px">Plan de estudio sugerido</h3>
+  <div class="grid-2">
+    <div class="panel"><h4 style="margin-top:0">Vuelta 1 · 40 min</h4><p>Lee tus historias (2), el mapa (4) y los conceptos (5). No memorices: entiende el recorrido de los datos.</p></div>
+    <div class="panel"><h4 style="margin-top:0">Vuelta 2 · 60 min</h4><p>Código (6) con tu app.js abierto al lado. Explica cada bloque en voz alta sin mirar la columna "En cristiano".</p></div>
+    <div class="panel"><h4 style="margin-top:0">Vuelta 3 · 30 min</h4><p>Preguntas (7) y quiz (8). Ensaya la demo (3) 3 veces con cronómetro.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="pie"><div class="wrap">Guía generada a partir de tu código real en <a href="https://github.com/naaria/pokedex">naaria/pokedex</a>. Tu progreso (secciones dominadas y mejor puntaje del quiz) se guarda solo en este navegador.</div></footer>
+
+<script>
+(function () {
+  // ---------- Guardado local (puede no estar disponible) ----------
+  const CLAVE = "pokedex-estudio-v1";
+  function leer() { try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch (e) { return {}; } }
+  function guardar(datos) { try { localStorage.setItem(CLAVE, JSON.stringify(datos)); } catch (e) {} }
+  const estado = Object.assign({ hechas: [], mejor: null }, leer());
+
+  // ---------- Secciones dominadas ----------
+  const secciones = [...document.querySelectorAll("section[data-seccion]")];
+  const total = secciones.length;
+  function pintarProgreso() {
+    const n = estado.hechas.length;
+    document.getElementById("progreso-texto").textContent = `SECCIONES DOMINADAS: ${n} / ${total}`;
+    const barra = document.getElementById("progreso-barra");
+    barra.setAttribute("aria-valuenow", String(n));
+    barra.firstElementChild.style.width = `${(n / total) * 100}%`;
+    secciones.forEach(function (s) {
+      const hecha = estado.hechas.includes(s.dataset.seccion);
+      s.querySelector(".domino").setAttribute("aria-pressed", String(hecha));
+      s.querySelector(".domino").textContent = hecha ? "✓ Dominado" : "Lo domino";
+      const enlace = document.querySelector(`.nav a[href="#${s.id}"]`);
+      if (enlace) enlace.classList.toggle("hecho", hecha);
+    });
+  }
+  secciones.forEach(function (s) {
+    s.querySelector(".domino").addEventListener("click", function () {
+      const id = s.dataset.seccion;
+      estado.hechas = estado.hechas.includes(id) ? estado.hechas.filter(x => x !== id) : [...estado.hechas, id];
+      guardar(estado);
+      pintarProgreso();
+    });
+  });
+  pintarProgreso();
+
+  // ---------- Filtros por chip ----------
+  function filtroChips(grupoId, atributo, items, todos) {
+    const grupo = document.getElementById(grupoId);
+    grupo.addEventListener("click", function (ev) {
+      const chip = ev.target.closest(".chip");
+      if (!chip) return;
+      grupo.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c === chip)));
+      const valor = chip.dataset[atributo];
+      items().forEach(function (el) { el.hidden = !(valor === todos || el.dataset[atributo] === valor); });
+    });
+  }
+  filtroChips("filtro-labs", "lab", () => document.querySelectorAll(".concepto"), "todos");
+  filtroChips("filtro-cats", "cat", () => document.querySelectorAll(".flash"), "todas");
+
+  // ---------- Flashcards ----------
+  const listaPreguntas = document.getElementById("lista-preguntas");
+  document.getElementById("mezclar").addEventListener("click", function () {
+    const fichas = [...listaPreguntas.children];
+    for (let i = fichas.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [fichas[i], fichas[j]] = [fichas[j], fichas[i]]; }
+    fichas.forEach(f => { f.open = false; listaPreguntas.appendChild(f); });
+  });
+  document.getElementById("abrir-todas").addEventListener("click", () => listaPreguntas.querySelectorAll("details:not([hidden])").forEach(d => d.open = true));
+  document.getElementById("cerrar-todas").addEventListener("click", () => listaPreguntas.querySelectorAll("details").forEach(d => d.open = false));
+
+  // ---------- Quiz ----------
+  const QUIZ = [{"q": "¿En qué orden se imprime esto?<br><code>console.log(1); fetch(url).then(() =&gt; console.log(3)); console.log(2);</code>", "ops": ["1, 3, 2", "1, 2, 3", "3, 1, 2"], "ok": 1, "por": "fetch es asíncrono: JavaScript imprime el 2 sin esperar y el 3 sale cuando llegan los datos."}, {"q": "Buscas \"pikachuu\". ¿Qué devuelve <code>fetch</code>?", "ops": ["Lanza un error porque no existe", "Una respuesta con <code>status</code> 404 y <code>ok</code> false", "<code>null</code>"], "ok": 1, "por": "fetch solo falla sin red. El 404 llega como respuesta; por eso hay que revisarlo."}, {"q": "¿Dónde debe ir <code>spinner.classList.add(\"hidden\")</code>?", "ops": ["Al final del try", "En el catch", "En el finally"], "ok": 2, "por": "finally corre siempre: con éxito o con error."}, {"q": "¿Qué hace <code>imagen ?? \"respaldo.png\"</code> si imagen es <code>undefined</code>?", "ops": ["Da undefined", "Da \"respaldo.png\"", "Lanza un error"], "ok": 1, "por": "?? usa el valor de la derecha cuando el de la izquierda es null o undefined."}, {"q": "¿Qué devuelve <code>[\"a\",\"b\"].map(t =&gt; t.toUpperCase())</code>?", "ops": ["[\"A\",\"B\"]", "undefined", "\"AB\""], "ok": 0, "por": "map devuelve un array nuevo del mismo tamaño con cada elemento transformado."}, {"q": "Si uno de los pedidos de <code>Promise.all</code> falla…", "ops": ["Devuelve los que sí llegaron", "Se rechaza completo y entra al catch", "Lo ignora y sigue"], "ok": 1, "por": "Promise.all falla con el primer error. Por eso cargarPokedex lo envuelve en try/catch."}, {"q": "¿Por qué el nombre buscado se muestra con <code>textContent</code>?", "ops": ["Es más rápido", "Para que el HTML que escriba la persona no se ejecute", "Porque innerHTML no existe"], "ok": 1, "por": "Así evito inyectar código (XSS)."}, {"q": "¿Qué significa <code>?limit=12&amp;offset=24</code>?", "ops": ["12 Pokémon empezando desde el 24", "24 Pokémon empezando desde el 12", "El Pokémon número 12 y el 24"], "ok": 0, "por": "limit = cuántos, offset = desde dónde."}, {"q": "¿Qué pasa si quitas el último Pokémon del tipo que estás filtrando?", "ops": ["La rejilla queda vacía", "El filtro vuelve a \"Todos\"", "Da un error"], "ok": 1, "por": "mostrarColeccion revisa si aún hay de ese tipo; si no, vuelve a \"todos\"."}, {"q": "¿Por qué <code>mostrarError(texto, cargarPokedex)</code> va sin paréntesis?", "ops": ["Es un error de tipeo", "Para pasar la función y que el botón la ejecute después", "Porque cargarPokedex no tiene parámetros"], "ok": 1, "por": "Con () se ejecutaría en ese momento; sin () se pasa como dato (callback)."}, {"q": "¿Por qué comparas por nombre con <code>some</code> en vez de <code>includes(pokemon)</code>?", "ops": ["includes no existe en arrays", "Dos búsquedas crean objetos distintos aunque sean el mismo Pokémon", "some es más corto"], "ok": 1, "por": "includes compara si es el mismo objeto en memoria; por eso comparo el nombre."}, {"q": "¿Cuánto mide la barra de una estadística de 78?", "ops": ["78 %", "31 %", "50 %"], "ok": 1, "por": "78 / 255 × 100 = 30,6 → Math.round da 31 %."}];
+  const form = document.getElementById("form-quiz");
+  const puntaje = document.getElementById("puntaje");
+  function armarQuiz() {
+    form.innerHTML = QUIZ.map(function (p, i) {
+      const ops = p.ops.map((o, j) => `<label><input type="radio" name="q${i}" id="q${i}o${j}" value="${j}"> <span>${o}</span></label>`).join("");
+      return `<div class="pregunta"><fieldset><legend>${i + 1}. ${p.q}</legend>${ops}</fieldset><p class="resultado" hidden></p></div>`;
+    }).join("");
+    puntaje.textContent = estado.mejor !== null ? `Tu mejor puntaje: ${estado.mejor} / ${QUIZ.length}` : "";
+  }
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    let bien = 0;
+    QUIZ.forEach(function (p, i) {
+      const elegido = form.querySelector(`input[name="q${i}"]:checked`);
+      const caja = form.children[i].querySelector(".resultado");
+      caja.hidden = false;
+      if (elegido && Number(elegido.value) === p.ok) {
+        bien++; caja.className = "resultado bien"; caja.textContent = "✓ Correcto. " + p.por;
+      } else {
+        caja.className = "resultado mal";
+        caja.textContent = (elegido ? "✗ No es esa. " : "Sin responder. ") + "Respuesta: " + p.ops[p.ok].replace(/<[^>]+>/g, "") + ". " + p.por;
+      }
+    });
+    if (estado.mejor === null || bien > estado.mejor) { estado.mejor = bien; guardar(estado); }
+    puntaje.textContent = `Sacaste ${bien} / ${QUIZ.length}` + (bien === QUIZ.length ? " · ¡Perfecto!" : "") + ` · Mejor: ${estado.mejor}`;
+  });
+  document.getElementById("reiniciar-quiz").addEventListener("click", armarQuiz);
+  armarQuiz();
+})();
+</script>
+
+<!-- Mermaid dibuja los 3 diagramas del mapa -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  (function () {
+    var raiz = document.documentElement.dataset.theme;
+    var oscuro = raiz ? raiz === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    mermaid.initialize({ startOnLoad: true, theme: oscuro ? "dark" : "default", fontFamily: "Atkinson Hyperlegible, system-ui, sans-serif" });
+  })();
+</script>
+</body>
+</html>

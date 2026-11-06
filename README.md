@@ -1,10 +1,12 @@
 # Axel Study
 
-Guía para preparar la presentación del proyecto del Módulo 3 ([Pokédex](https://github.com/naaria/pokedex)).
+Academia por niveles para dominar el proyecto del Módulo 3 ([Pokédex](https://github.com/naaria/pokedex)).
 
-🔗 **Ver la guía:** https://naaria.github.io/axel-study/
+🔗 **Academia:** https://naaria.github.io/axel-study/ · **Guía rápida:** https://naaria.github.io/axel-study/guia.html
 
-Incluye:
+La academia tiene 17 niveles y un examen final. Cada nivel se desbloquea al aprobar el anterior: teoría, código, lectura guiada línea por línea, experimentos, una prueba sin errores y una explicación con tus palabras. Cubre la arquitectura, `index.html` y su CSS, `app.js` completo, el README y las historias de usuario.
+
+La guía rápida incluye:
 
 - Guion de la demo de 10 minutos y la rúbrica.
 - Las 2 historias de usuario del proyecto con sus criterios de aceptación.
